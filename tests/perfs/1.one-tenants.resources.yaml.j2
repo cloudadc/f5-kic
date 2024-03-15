@@ -1,0 +1,161 @@
+{% for num in range(index|int, count|int, 1) %}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: f5-vxlan-test-d{{ num }}
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      run: f5-vxlan-test-d{{ num }}
+  template:
+    metadata:
+      labels:
+        run: f5-vxlan-test-d{{ num }}
+    spec:
+      containers:
+      - image: "nginx:latest"
+        imagePullPolicy: IfNotPresent
+        name: f5-vxlan-test-d{{ num }}
+        ports:
+        - containerPort: 80
+          protocol: TCP
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: f5-vxlan-test-s{{ num }}
+  namespace: default
+  labels:
+    cis.f5.com/as3-tenant: Tenant-test
+    cis.f5.com/as3-app: my-app-{{ num }}
+    cis.f5.com/as3-pool: mypool1
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: f5-vxlan-test-d{{ num }}
+  sessionAffinity: None
+  type: ClusterIP
+
+
+{% endfor %}
+
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    f5type: virtual-server
+    as3: "true"
+  name: f5-vxlan-test
+  namespace: default
+data:
+  template: |
+    {
+        "class": "AS3",
+        "declaration": {
+            "class": "ADC",
+            "schemaVersion": "3.18.0",
+            "id": "urn:uuid:33045210-3ab8-4636-9b2a-c98d22ab915d",
+            "label": "http",
+            "remark": "application Template",
+            "Tenant-test": {
+                "class": "Tenant",
+
+{% for num in range(index|int, count|int, 1) %}
+
+                "my-app-{{ num }}": {
+                    "class": "Application",
+                    "template": "generic",
+                    "foo_ns_vs": {
+                        "class": "Service_HTTP",
+                        "remark": "app in Tenant-{{ num }}",
+                        "virtualAddresses": [
+                            "10.250.{{ 100 + (num/254)|int }}.{{ 1 + num%254 }}"
+                        ],
+                        "profileHTTP": {
+                            "use": "http_X-Forwarded-For"
+                        },
+                        "persistenceMethods": [
+                            {
+                                "use": "cookie_encryption"
+                            }
+                        ],
+                        "iRules": [
+                            "myirule"
+                        ],
+                        "pool": "mypool1"
+                    },
+                    "myirule": {
+                        "class": "iRule",
+                        "remark": "switch between pools",
+                        "iRule": "when HTTP_REQUEST {\n if { [HTTP::uri] starts_with \"/coffee\" } {\n pool /Tenant-test/my-app-{{ num }}/mypool1 \n } else { \n pool /Tenant-test/my-app-{{ num }}/mypool2 \n } \n}"
+                    },
+                    "cookie_encryption": {
+                        "class": "Persist",
+                        "persistenceMethod": "cookie",
+                        "encrypt": true,
+                        "cookieMethod": "insert",
+                        "passphrase": {
+                            "ciphertext": "a3RjeGZ5Z2Q=",
+                            "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0="
+                        }
+                    },
+                    "http_X-Forwarded-For": {
+                        "class": "HTTP_Profile",
+                        "xForwardedFor": true
+                    },
+                    "mymonitor": {
+                        "class": "Monitor",
+                        "monitorType": "tcp",
+                        "interval": 5,
+                        "timeout": 16
+                    },
+                    "mypool1": {
+                        "class": "Pool",
+                        "monitors": [
+                            "http"
+                        ],
+                        "members": [
+                            {
+                                "servicePort": 80,
+                                "serverAddresses": []
+                            }
+                        ]
+                    },
+                    "mypool2": {
+                        "class": "Pool",
+                        "monitors": [
+                            {
+                                "use": "mymonitor"
+                            }
+                        ],
+                        "loadBalancingMode": "least-connections-member",
+                        "minimumMembersActive": 0,
+                        "members": [
+                            {
+                                "servicePort": 80,
+                                "serverAddresses": []
+                            }
+                        ]
+                    }
+                }{{ ',' if not loop.last }}
+
+{% endfor %}
+
+            }
+        }
+    }
+

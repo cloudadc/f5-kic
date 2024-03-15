@@ -1,0 +1,65 @@
+### data-group
+
+GET https://10.250.17.164:8443/mgmt/tm/ltm/data-group
+Authorization: Basic admin:P@ssw0rd123
+
+
+### data-group/internal
+
+GET https://10.250.17.164:8443/mgmt/tm/ltm/data-group/internal?$filter=partition+eq+kubernetes
+Authorization: Basic admin:P@ssw0rd123
+
+
+### data-group/external
+
+GET https://10.250.17.164:8443/mgmt/tm/ltm/data-group/external
+Authorization: Basic admin:P@ssw0rd123
+
+
+### data-group/internal
+
+POST https://10.250.17.164:8443/mgmt/tm/ltm/data-group/internal
+Authorization: Basic admin:P@ssw0rd123
+
+{
+  "name": "zongzw-dg-internal",
+  "type": "string",
+  "partition": "Common",
+  "records": [
+    {
+      "name": "dg-01",
+      "data": "zongzwsdfa"
+    }
+  ]
+}
+
+###
+
+GET https://10.250.17.164:8443/mgmt/tm/ltm/data-group/internal/~Common~zongzw-dg-internal
+Authorization: Basic admin:P@ssw0rd123
+
+### data-group/internal
+
+PATCH https://10.250.17.164:8443/mgmt/tm/ltm/data-group/internal/zongzw-dg-internal
+Authorization: Basic admin:P@ssw0rd123
+
+{
+  "name": "zongzw-dg-internal",
+  "type": "string",
+  "partition": "Common",
+  "records": [
+    {
+      "name": "dg-012",
+      "data": "zongzwsdfa"
+    },
+    {
+      "name": "dg-022",
+      "data": "zongzwsdfa"
+    }
+  ]
+}
+
+### get data-group
+
+DELETE https://10.250.17.164:8443/mgmt/tm/ltm/data-group/internal/zongzw-dg-internal
+Authorization: Basic admin:P@ssw0rd123

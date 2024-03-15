@@ -1,0 +1,45 @@
+{ 
+    "vxlan-arp": {
+        "arps": [
+            {
+                "ipAddress": "10.42.17.144",
+                "macAddress": "76:4a:70:8f:17:1a",
+                "name": "k8s-10.42.17.144"
+            },
+            {
+                "ipAddress": "10.42.17.145",
+                "macAddress": "76:4a:70:8f:17:1a",
+                "name": "k8s-10.42.17.145"
+            }
+        ]
+    },
+    "vxlan-fdb": {
+        "name": "fl-tunnel",
+        "records": [
+            {
+                "endpoint": "10.145.71.92",
+                "name": "5e:1b:6b:ec:f2:34"
+            },
+            {
+                "endpoint": "10.145.78.194",
+                "name": "76:4a:70:8f:17:1a"
+            },
+            {
+                "endpoint": "10.145.64.119",
+                "name": "02:b1:a6:ab:63:49"
+            },
+            {
+                "endpoint": "10.145.70.89",
+                "name": "76:4e:38:ad:c2:67"
+            },
+            {
+                "endpoint": "10.145.79.164",
+                "name": "c6:dd:f1:19:25:ec"
+            },
+            {
+                "endpoint": "10.145.72.30",
+                "name": "da:fc:48:02:d7:cf"
+            }
+        ]
+    }
+}

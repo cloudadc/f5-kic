@@ -1,0 +1,171 @@
+POST http://localhost:8081/validate
+Content-Type: application/json
+
+{
+    "class": "ADC",
+    "scratch": "defaults-only",
+    "schemaVersion": "3.28.0",
+    "id": "123abcd",
+    "label": "f5_test003",
+    "remark": "HTTP application",
+    "f5_test003": {
+        "class": "Tenant",
+        "f5_test003": {
+            "class": "Application",
+            "template": "generic",
+            "app_svc_vip": {
+                "class": "Service_Address",
+                "virtualAddress": "172.16.142.112",
+                "arpEnabled": false
+            },
+            "app_svc_vs_demo": {
+                "class": "Service_HTTP",
+                "persistenceMethods": [
+                    "cookie"
+                ],
+                "virtualAddresses": [
+                    {
+                        "use": "app_svc_vip"
+                    }
+                ],
+                "virtualPort": 83,
+                "iRules": [
+                    "iRulesTest"
+                ],
+                "profileTCP": {
+                    "use": "customTCPProfile"
+                },
+                "profileHTTP": {
+                    "use": "customHTTPProfile"
+                },
+                "snat": {
+                    "use": "snatpool-111"
+                },
+                "pool": "app_svc_pool3"
+            },
+            "iRulesTest": {
+                "class": "iRule",
+                "remark": "snatpool",
+                "iRule": "when CLIENT_ACCEPTED {\n snatpool snatpool-111 \n }"
+            },
+            "customTCPProfile": {
+                "class": "TCP_Profile",
+                "idleTimeout": 600 
+            },
+            "customHTTPProfile": {
+                "class": "HTTP_Profile",
+                "xForwardedFor": true
+            },
+            "snatpool-111": {
+                "class": "SNAT_Pool",
+                "snatAddresses": [
+                    "172.16.142.221",
+                    "172.16.142.222"
+                ]
+            },
+            "monitorTcp": {
+                "class": "Monitor",
+                "monitorType": "tcp",
+                "timeout": 10,
+                "interval": 2,
+                "send": "",
+                "receive": ""
+            },
+            "app_svc_pool3": {
+                "class": "Pool",
+                "monitors": [
+                    {
+                        "use": "monitorTcp"
+                    }
+                ],
+                "loadBalancingMode": "least-connections-member",
+                "members": [
+                    {
+                        "servicePort": 8080,
+                        "serverAddresses": []
+                    }
+                ]
+            }
+        }
+    }
+}
+
+
+###
+POST http://localhost:8081/validate
+Content-Type: application/json
+
+{
+    "class": "ADC",
+    "schemaVersion": "3.18.0",
+    "label": "http",
+    "id": "pingan_cis_test",
+    "Tenant1": {
+        "class": "Tenant",
+        "App1": {
+            "class": "Application",
+            "template": "generic",
+            "tea_vs": {
+                "class": "Service_L4",
+                "virtualAddresses": [ "10.1.10.100" ],
+                "virtualPort": 80,
+                "persistenceMethods": [ "source-address" ],
+                "pool": "tea"
+            },
+            "tea": {
+                "class": "Pool",
+                "monitors": [ "http" ],
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "serverAddresses": []
+                    }
+                ]
+            }
+        },
+        "App2": {
+            "class": "Application",
+            "template": "generic",
+            "coffee_vs": {
+                "class": "Service_HTTP",
+                "persistenceMethods": [ "cookie" ],
+                "virtualAddresses": [ "10.1.10.101" ],
+                "profileTCP": { "use": "tcp_profile_600" },
+                "profileHTTP": { "use": "http_profile_XFF" },
+                "profileTrafficLog": { "bigip": "/Common/logging-profile" },
+                "profileProtocolInspection": { "bigip": "/Common/my_http_ips"},
+                "profileDOS": { "bigip": "/Common/my_http_ddos" },
+                "securityLogProfiles": [{ "bigip": "/Common/logging-ljx" }],
+                "pool": "coffee"
+            },
+            "coffee": {
+                "class": "Pool",
+                "monitors": [
+                    { "use": "my_http_monitor" }
+                ],
+                "loadBalancingMode": "least-connections-member",
+                "members": [
+                    {
+                        "servicePort": 80,
+                        "serverAddresses": []
+                    }
+                ]
+            },
+            "tcp_profile_600": {
+                "class": "TCP_Profile",
+                "idleTimeout": 600
+            },
+            "http_profile_XFF": {
+                "class": "HTTP_Profile",
+                "xForwardedFor": true
+            },
+            "my_http_monitor": {
+                "class": "Monitor",
+                "monitorType": "http",
+                "send": "GET / HTTP/1.1\r\nCONNECTION:CLOSE\r\nHost:coffee",
+                "receive":"Server address",
+                "interval": 5
+            }
+        }
+    }
+}

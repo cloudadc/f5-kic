@@ -1,0 +1,141 @@
+{% for num in range(index|int, count|int, 1) %}
+
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: namespace{{ num }}
+
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: f5-vxlan-test-c{{ num }}
+  namespace: namespace{{ num }}
+  labels:
+    f5type: virtual-server
+    as3: "true"
+data:
+  template: |
+     {
+        "class": "AS3",
+        "action": "deploy",
+        "persist": true,
+        "declaration": {
+            "class": "ADC",
+            "schemaVersion": "3.18.0",
+            "id": "veconfig-nsgroup1",
+            "namespace{{ num }}": {
+                "class": "Tenant",
+                "service_name_app{{ num }}": {
+                    "class": "Application",
+                    "template": "generic",
+                    "service_name_vs{{ num }}": {
+                        "class": "Service_HTTP",
+                        "persistenceMethods": [
+                            "cookie"
+                        ],
+                        "virtualAddresses": [
+                            "197.14.222.{{ num }}"
+                        ],
+                        "virtualPort": {{ num + 8000 }},
+                        "profileMultiplex": {
+                            "use": "service_name_oneconnectprofile{{ num }}"
+                        },
+                        "profileHTTP": {
+                            "use": "service_name_httpprofile{{ num }}"
+                        },
+                        "snat": "self",
+                        "pool": "service_name_pool{{ num }}"
+                    },
+                    "service_name_pool{{ num }}": {
+                        "class": "Pool",
+                        "monitors": [
+                            {
+                                "use": "service_name_monitor{{ num }}"
+                            }
+                        ],
+                        "loadBalancingMode": "least-connections-member",
+                        "members": [
+                            {
+                                "servicePort": 80,
+                                "serverAddresses": []
+                            }
+                        ]
+                    },
+                    "service_name_httpprofile{{ num }}": {
+                        "class": "HTTP_Profile",
+                        "xForwardedFor": true
+                    },
+                    "service_name_oneconnectprofile{{ num }}": {
+                        "class": "Multiplex_Profile",
+                        "sourceMask": "255.255.255.255",
+                        "maxConnectionReuse": 5
+                    },
+                    "service_name_monitor{{ num }}": {
+                        "class": "Monitor",
+                        "monitorType": "http",
+                        "interval": 5,
+                        "timeout": 16,
+                        "send": "GET / HTTP/1.0\\r\\nHost:vhost.example.com\\r\\n\\r\\n",
+                        "receive": "200 OK"
+                    }
+                }
+            }
+        }
+      }
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: f5-vxlan-test-s{{ num }}
+  namespace: namespace{{ num }}
+  labels:
+    cis.f5.com/as3-tenant: namespace{{ num }}
+    cis.f5.com/as3-app: service_name_app{{ num }}
+    cis.f5.com/as3-pool: service_name_pool{{ num }}
+spec:
+  ports:
+  - port: {{ num + 8000 }}
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: f5-vxlan-test-d{{ num }}
+  sessionAffinity: None
+  type: ClusterIP
+
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: f5-vxlan-test-d{{ num }}
+  namespace: namespace{{ num }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: f5-vxlan-test-d{{ num }}
+  template:
+    metadata:
+      labels:
+        run: f5-vxlan-test-d{{ num }}
+    spec:
+      containers:
+      - image: "nginx:latest"
+        imagePullPolicy: IfNotPresent
+        name: f5-vxlan-test-d{{ num }}
+        ports:
+        - containerPort: 80
+          protocol: TCP
+
+
+
+{% endfor %}

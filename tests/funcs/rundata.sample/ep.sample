@@ -1,0 +1,26 @@
+*k8s.io/api/core/v1.Endpoints {
+    TypeMeta: k8s.io/apimachinery/pkg/apis/meta/v1.TypeMeta {
+        Kind: "", APIVersion: ""
+    }, 
+    ObjectMeta: k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta {
+        Name: "rest-service", 
+        GenerateName: "", 
+        Namespace: "default", 
+        SelfLink: "/api/v1/namespaces/default/endpoints/rest-service", 
+        UID: "ce53ecc1-2752-4e8e-9b4b-d6a00efe489a", 
+        ResourceVersion: "24092387", 
+        Generation: 0, 
+        CreationTimestamp: (*"k8s.io/apimachinery/pkg/apis/meta/v1.Time")(0xc00024a948), 
+        DeletionTimestamp: *k8s.io/apimachinery/pkg/apis/meta/v1.Time nil, 
+        DeletionGracePeriodSeconds: *int64 nil, 
+        Labels: map[string]string [...], 
+        Annotations: map[string]string [...], 
+        OwnerReferences: []k8s.io/apimachinery/pkg/apis/meta/v1.OwnerReference len: 0, cap: 0, nil, 
+        Finalizers: []string len: 0, cap: 0, nil, 
+        ClusterName: "", 
+        ManagedFields: []k8s.io/apimachinery/pkg/apis/meta/v1.ManagedFieldsEntry len: 0, cap: 0, nil
+    }, 
+    Subsets: []k8s.io/api/core/v1.EndpointSubset len: 1, cap: 4, [
+        (*"k8s.io/api/core/v1.EndpointSubset")(0xc000154900)
+    ]
+}

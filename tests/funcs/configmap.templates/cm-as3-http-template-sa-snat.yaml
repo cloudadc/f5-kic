@@ -1,0 +1,152 @@
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-as3-http-template-sa-snat-configmap
+  namespace: default
+  labels:
+    f5type: virtual-server
+    as3: "true"
+data:
+  template: |
+    {
+        "class": "AS3",
+        "action": "deploy",
+        "persist": true,
+        "declaration": {
+            "class": "ADC",
+            "schemaVersion": "3.29.0",
+            "id": "123abcd",
+            "label": "f5_test003",
+            "remark": "HTTP application",
+            "f5_test003": {
+                "class": "Tenant",
+                "f5_test003": {
+                    "class": "Application",
+                    "template": "generic",
+                    "app_svc_vip": {
+                        "class": "Service_Address",
+                        "virtualAddress": "172.16.142.112",
+                        "arpEnabled": true
+                    },
+                    "app_svc_vs_demo": {
+                        "class": "Service_HTTP",
+                        "persistenceMethods": [
+                            "cookie"
+                        ],
+                        "virtualAddresses": [
+                            {
+                                "use": "app_svc_vip"
+                            }
+                        ],
+                        "virtualPort": 83,
+                        "iRules": [
+                            "iRulesTest"
+                        ],
+                        "profileTCP": {
+                            "use": "customTCPProfile"
+                        },
+                        "profileHTTP": {
+                            "use": "customHTTPProfile"
+                        },
+                        "snat": {
+                            "use": "snatpool-111"
+                        },
+                        "pool": "app_svc_pool3"
+                    },
+                    "iRulesTest": {
+                        "class": "iRule",
+                        "remark": "snatpool",
+                        "iRule": "when CLIENT_ACCEPTED {\n snatpool snatpool-111 \n }"
+                    },
+                    "customTCPProfile": {
+                        "class": "TCP_Profile",
+                        "idleTimeout": 600 
+                    },
+                    "customHTTPProfile": {
+                        "class": "HTTP_Profile",
+                        "xForwardedFor": true
+                    },
+                    "snatpool-111": {
+                        "class": "SNAT_Pool",
+                        "snatAddresses": [
+                            "172.16.142.221",
+                            "172.16.142.222"
+                        ]
+                    },
+                    "monitorTcp": {
+                        "class": "Monitor",
+                        "monitorType": "tcp",
+                        "timeout": 10,
+                        "interval": 2,
+                        "send": "",
+                        "receive": ""
+                    },
+                    "app_svc_pool3": {
+                        "class": "Pool",
+                        "monitors": [
+                            {
+                                "use": "monitorTcp"
+                            }
+                        ],
+                        "loadBalancingMode": "least-connections-member",
+                        "members": [
+                            {
+                                "servicePort": 80,
+                                "serverAddresses": []
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+
+
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cm-as3-http-template-sa-snat-deployment
+  namespace: default
+spec:
+  replicas: 13
+  selector:
+    matchLabels:
+      run: cm-as3-http-template-sa-snat
+  template:
+    metadata:
+      labels:
+        run: cm-as3-http-template-sa-snat
+    spec:
+      containers:
+      - image: "nginx:latest"
+        imagePullPolicy: IfNotPresent
+        name: cm-as3-http-template-sa-snat
+        ports:
+        - containerPort: 80
+          protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cm-as3-http-template-sa-snat
+  namespace: default
+  labels:
+    cis.f5.com/as3-tenant: f5_test003
+    cis.f5.com/as3-app: f5_test003
+    cis.f5.com/as3-pool: app_svc_pool3
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: cm-as3-http-template-sa-snat
+  sessionAffinity: None
+  type: ClusterIP

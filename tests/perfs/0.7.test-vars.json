@@ -1,0 +1,10 @@
+{
+    "bigip_ipaddr": "10.250.118.253",
+    "bigip_password": "F5@osp2019",
+    "resource_prefix": "f5-vxlan-test-",
+    "resource_mark": {
+        "configmap": "c",
+        "ingress": "i",
+        "cccl": "c"
+    }
+}

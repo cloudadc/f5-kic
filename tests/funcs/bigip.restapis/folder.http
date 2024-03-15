@@ -1,0 +1,21 @@
+### get folder
+
+GET https://10.250.118.253:8443/mgmt/tm/sys/folder?$select=name,partition&$filter=partition+eq+f5_test003
+Authorization: Basic admin:F5@osp2019
+
+
+###
+
+POST https://10.250.118.253:8443/mgmt/tm/sys/folder
+Authorization: Basic admin:F5@osp2019
+
+{
+    "name": "zongzw-partition",
+    "partition": "/"
+}
+
+
+###
+
+GET https://10.250.15.180/mgmt/tm/sys/folder
+Authorization: Basic admin:P@ssw0rd123

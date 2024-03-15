@@ -1,0 +1,83 @@
+
+
+### monitor http
+GET https://10.250.118.253:8443/mgmt/tm/ltm/monitor/http
+Authorization: Basic admin:F5@osp2019
+
+
+###
+GET https://10.250.118.253:8443/mgmt/tm/ltm/pool/~namespace_name~service_name_app~service_name_pool/members
+Authorization: Basic admin:F5@osp2019
+
+###
+GET https://10.250.118.253:8443/mgmt/tm/ltm/pool/~Sample_02~A2~web_pool/members
+Authorization: Basic admin:F5@osp2019
+
+### update pool
+PUT https://10.250.118.253:8443/mgmt/tm/ltm/pool/mysnat-pool
+Authorization: Basic admin:F5@osp2019
+
+{
+    "monitor": "gateway_icmp and tcp"
+}
+
+
+### create pool
+
+POST https://10.250.15.109/mgmt/tm/ltm/pool
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "name": "my-pool",
+    "partition": "cis-c-tenant",
+    "monitor": "gateway_icmp and tcp",
+    "serviceDownAction": "reset",
+    "loadBalancingMode": "least-connections-member",
+    "members": [
+        {
+            "name": "12.23.45.6:80"
+        }
+    ]
+}
+
+### add new members to pool
+
+PATCH https://10.250.118.253:8443/mgmt/tm/ltm/pool/~Common~my-pool
+Authorization: Basic admin:F5@osp2019
+
+{
+    "kind": "tm:ltm:pool:poolstate",
+    "name": "my-pool",
+    "monitor": "min 1 of http https",
+    "serviceDownAction": "reset",
+    "loadBalancingMode": "least-connections-member",
+    "members": [
+        {
+            "name": "12.23.4.52:80"
+        },
+        {
+            "name": "22.23.4.52:80"
+        },
+        {
+            "name": "52.23.4.52:80"
+        },
+        {
+            "name": "42.23.4.52:80"
+        }
+    ]
+}
+
+### delete pool 
+
+DELETE https://10.250.15.109/mgmt/tm/ltm/pool/~cis-c-tenant~my-pool
+Authorization: Basic admin:P@ssw0rd123
+
+### delete pool 
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/pool/~Common~my-pool
+Authorization: Basic admin:F5@osp2019
+
+### members
+
+GET https://10.250.18.105:8443/mgmt/tm/ltm/pool/~f5_test003~folderx~tcp_pool/members
+Authorization: Basic admin:P@ssw0rd123

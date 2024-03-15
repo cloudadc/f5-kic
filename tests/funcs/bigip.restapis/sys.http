@@ -1,0 +1,3 @@
+
+GET https://10.145.64.120:8443/mgmt/tm/sys/version
+Authorization: Basic admin:P@ssw0rd123

@@ -1,0 +1,81 @@
+### get nodes
+
+GET https://10.250.15.180/mgmt/tm/ltm/node
+Authorization: Basic admin:P@ssw0rd123
+
+
+### get node 
+
+GET https://10.250.15.180/mgmt/tm/ltm/node/~k8s-ceb001~10.42.0.233
+Authorization: Basic admin:P@ssw0rd123
+
+
+### delete node 
+
+DELETE https://10.250.15.109/mgmt/tm/ltm/node/~cis-c-tenant~12.23.45.6
+Authorization: Basic admin:P@ssw0rd123
+
+### get nodes
+
+GET https://10.250.15.180/mgmt/tm/ltm/node/?$filter=partition+eq+f5_test003&$select=name
+Authorization: Basic admin:P@ssw0rd123
+
+### get members
+
+GET https://10.250.15.180/mgmt/tm/ltm/virtual/~f5_test003~f5_test003~app_svc_vs_demo?expandSubcollections=true
+Authorization: Basic admin:P@ssw0rd123
+
+### update node 
+
+PATCH https://10.250.15.180/mgmt/tm/ltm/node/~k8s-ceb001~10.42.0.233
+Authorization: Basic admin:P@ssw0rd123
+Content-Type: application/json
+
+{
+  "name": "10.42.0.233",
+  "partition": "k8s-ceb001",
+  "address": "10.42.0.233",
+  "connectionLimit": 0,
+  "dynamicRatio": 1,
+  "ephemeral": "false",
+  "fqdn": {
+    "addressFamily": "ipv4",
+    "autopopulate": "disabled",
+    "downInterval": 5,
+    "interval": "3600"
+  },
+  "logging": "disabled",
+  "monitor": "default",
+  "rateLimit": "disabled",
+  "ratio": 1,
+  "subPath": "k8s-ceb001-svc-1-app",
+  "session": "user-enabled"
+}
+
+
+
+### create node 
+
+POST https://10.250.15.109/mgmt/tm/ltm/node
+Authorization: Basic admin:P@ssw0rd123
+Content-Type: application/json
+
+{
+  "name": "12.23.45.6",
+  "partition": "Common",
+  "address": "12.23.45.6",
+  "connectionLimit": 0,
+  "dynamicRatio": 1,
+  "ephemeral": "false",
+  "fqdn": {
+    "addressFamily": "ipv4",
+    "autopopulate": "disabled",
+    "downInterval": 5,
+    "interval": "3600"
+  },
+  "logging": "disabled",
+  "monitor": "default",
+  "rateLimit": "disabled",
+  "ratio": 1,
+  "session": "user-enabled"
+}

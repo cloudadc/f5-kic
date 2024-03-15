@@ -1,0 +1,192 @@
+7427 ms
+
+HTTP/1.1 200 OK
+Date: Thu, 26 May 2022 13:18:29 GMT
+Server: Jetty(9.2.22.v20170606)
+Set-Cookie: BIGIPAuthCookie=F049084C3911E3AEA7298B262E6B3560F062E3D5; path=/; Secure; HttpOnly,BIGIPAuthUsernameCookie=admin; path=/; Secure; HttpOnly
+X-Frame-Options: SAMEORIGIN
+Strict-Transport-Security: max-age=16070400; includeSubDomains
+Content-Type: application/json; charset=UTF-8
+X-Powered-By: Express
+Pragma: no-cache
+Cache-Control: no-store, no-cache, must-revalidate
+Expires: -1
+Content-Length: 3133
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+Content-Security-Policy: default-src 'self'  'unsafe-inline' 'unsafe-eval' data: blob:; img-src 'self' data:  http://127.4.1.1 http://127.4.2.1
+Connection: close
+
+{
+  "results": [
+    {
+      "code": 200,
+      "message": "success",
+      "lineCount": 27,
+      "host": "localhost",
+      "tenant": "namespace_name",
+      "runTime": 1109
+    }
+  ],
+  "declaration": {
+    "class": "ADC",
+    "schemaVersion": "3.18.0",
+    "id": "veconfig-nsgroup1",
+    "namespace_name": {
+      "class": "Tenant",
+      "service_name_app": {
+        "class": "Application",
+        "template": "generic",
+        "service_name_vs": {
+          "class": "Service_HTTP",
+          "virtualAddresses": [
+            "197.14.222.12"
+          ],
+          "virtualPort": 80,
+          "profileMultiplex": {
+            "use": "service_name_oneconnectprofile"
+          },
+          "profileHTTP": {
+            "use": "service_name_httpprofile"
+          },
+          "snat": "self",
+          "pool": "service_name_pool",
+          "persistenceMethods": [
+            "cookie"
+          ],
+          "virtualType": "standard",
+          "layer4": "tcp",
+          "profileTCP": "normal",
+          "serviceDownImmediateAction": "none",
+          "shareAddresses": false,
+          "enable": true,
+          "maxConnections": 0,
+          "addressStatus": true,
+          "mirroring": "none",
+          "lastHop": "default",
+          "translateClientPort": false,
+          "translateServerAddress": true,
+          "translateServerPort": true,
+          "nat64Enabled": false,
+          "httpMrfRoutingEnabled": false,
+          "rateLimit": 0
+        },
+        "service_name_pool": {
+          "class": "Pool",
+          "monitors": [
+            {
+              "use": "service_name_monitor"
+            }
+          ],
+          "loadBalancingMode": "least-connections-member",
+          "members": [
+            {
+              "servicePort": 80,
+              "serverAddresses": [],
+              "enable": true,
+              "connectionLimit": 0,
+              "rateLimit": -1,
+              "dynamicRatio": 1,
+              "ratio": 1,
+              "priorityGroup": 0,
+              "adminState": "enable",
+              "addressDiscovery": "static",
+              "shareNodes": false
+            }
+          ],
+          "allowNATEnabled": true,
+          "allowSNATEnabled": true,
+          "minimumMembersActive": 1,
+          "reselectTries": 0,
+          "serviceDownAction": "none",
+          "slowRampTime": 10,
+          "minimumMonitors": 1
+        },
+        "service_name_httpprofile": {
+          "class": "HTTP_Profile",
+          "xForwardedFor": true,
+          "proxyType": "reverse",
+          "requestChunking": "preserve",
+          "responseChunking": "selective",
+          "rewriteRedirects": "none",
+          "multiplexTransformations": true,
+          "trustXFF": false,
+          "hstsInsert": false,
+          "hstsPeriod": 7862400,
+          "hstsIncludeSubdomains": true,
+          "hstsPreload": false,
+          "viaRequest": "remove",
+          "viaResponse": "remove",
+          "serverHeaderValue": "BigIP",
+          "knownMethods": [
+            "CONNECT",
+            "DELETE",
+            "GET",
+            "HEAD",
+            "LOCK",
+            "OPTIONS",
+            "POST",
+            "PROPFIND",
+            "PUT",
+            "TRACE",
+            "UNLOCK"
+          ],
+          "unknownMethodAction": "allow",
+          "maxRequests": 0,
+          "pipelineAction": "allow",
+          "webSocketsEnabled": false,
+          "webSocketMasking": "unmask",
+          "proxyConnectEnabled": false,
+          "maxHeaderCount": 64,
+          "maxHeaderSize": 32768,
+          "truncatedRedirects": false
+        },
+        "service_name_oneconnectprofile": {
+          "class": "Multiplex_Profile",
+          "sourceMask": "255.255.255.255",
+          "maxConnectionReuse": 5,
+          "maxConnections": 10000,
+          "maxConnectionAge": 86400,
+          "idleTimeoutOverride": 0,
+          "connectionLimitEnforcement": "none",
+          "sharePools": false
+        },
+        "service_name_monitor": {
+          "class": "Monitor",
+          "monitorType": "http",
+          "interval": 5,
+          "timeout": 16,
+          "send": "GET / HTTP/1.0\\r\\nHost:vhost.example.com\\r\\n\\r\\n",
+          "receive": "200 OK",
+          "targetAddress": "",
+          "upInterval": 0,
+          "timeUntilUp": 0,
+          "targetPort": 0,
+          "receiveDown": "",
+          "reverse": false,
+          "transparent": false,
+          "dscp": 0,
+          "adaptive": false,
+          "adaptiveDivergenceType": "relative",
+          "adaptiveDivergenceMilliseconds": 500,
+          "adaptiveDivergencePercentage": 100,
+          "adaptiveLimitMilliseconds": 1000,
+          "adaptiveWindow": 180
+        },
+        "enable": true
+      },
+      "enable": true,
+      "defaultRouteDomain": 0,
+      "optimisticLockKey": ""
+    },
+    "updateMode": "selective",
+    "controls": {
+      "archiveTimestamp": "2022-05-26T13:18:33.221Z",
+      "class": "Controls",
+      "logLevel": "error",
+      "trace": false,
+      "traceResponse": false,
+      "dryRun": false
+    }
+  }
+}

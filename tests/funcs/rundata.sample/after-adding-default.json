@@ -1,0 +1,85 @@
+{
+    "Tenant-0": {
+        "class": "Tenant",
+        "my-app": {
+            "class": "Application",
+            "foo_ns_vs": {
+                "class": "Service_HTTP",
+                "pool": "/Tenant-0/my-app/web_pool",
+                "remark": "app in Tenant-0",
+                "virtualAddresses": [
+                    "10.250.100.1"
+                ],
+                "virtualPort": 80,
+                "persistenceMethods": [
+                    "cookie"
+                ],
+                "profileHTTP": "basic",
+                "virtualType": "standard",
+                "layer4": "tcp",
+                "profileTCP": "normal",
+                "serviceDownImmediateAction": "none",
+                "shareAddresses": false,
+                "enable": true,
+                "maxConnections": 0,
+                "snat": "auto",
+                "addressStatus": true,
+                "mirroring": "none",
+                "lastHop": "default",
+                "translateClientPort": false,
+                "translateServerAddress": true,
+                "translateServerPort": true,
+                "nat64Enabled": false,
+                "httpMrfRoutingEnabled": false,
+                "rateLimit": 0
+            },
+            "template": "generic",
+            "web_pool": {
+                "class": "Pool",
+                "members": [
+                    {
+                        "serverAddresses": [],
+                        "servicePort": 80,
+                        "enable": true,
+                        "connectionLimit": 0,
+                        "rateLimit": -1,
+                        "dynamicRatio": 1,
+                        "ratio": 1,
+                        "priorityGroup": 0,
+                        "adminState": "enable",
+                        "addressDiscovery": "static",
+                        "shareNodes": false
+                    }
+                ],
+                "monitors": [
+                    "http"
+                ],
+                "allowNATEnabled": true,
+                "allowSNATEnabled": true,
+                "loadBalancingMode": "round-robin",
+                "minimumMembersActive": 1,
+                "reselectTries": 0,
+                "serviceDownAction": "none",
+                "slowRampTime": 10,
+                "minimumMonitors": 1
+            },
+            "enable": true
+        },
+        "enable": true,
+        "defaultRouteDomain": 0,
+        "optimisticLockKey": ""
+    },
+    "class": "ADC",
+    "controls": {
+        "class": "Controls",
+        "logLevel": "debug",
+        "trace": true,
+        "traceResponse": false,
+        "dryRun": false
+    },
+    "id": "urn:uuid:33045210-3ab8-4636-9b2a-c98d22ab915d",
+    "label": "http",
+    "remark": "application 0 Template",
+    "schemaVersion": "3.18.0",
+    "updateMode": "selective"
+}

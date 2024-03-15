@@ -1,0 +1,127 @@
+@baseUrl = https://10.250.18.105:8443/mgmt/tm
+@basic_auth = Basic admin:P@ssw0rd123
+@transID = {{create_transaction.response.body.transId}}
+
+###
+
+# @name create_transaction
+POST {{baseUrl}}/transaction
+Authorization: {{basic_auth}}
+
+{}
+
+
+###
+
+DELETE {{ baseUrl }}/ltm/virtual/~Common~file-servervs 
+Authorization: {{ basic_auth }}
+X-F5-REST-Coordination-Id: {{transID}}
+
+###
+
+DELETE {{ baseUrl }}/ltm/pool/~Common~file-servers
+Authorization: {{ basic_auth }}
+X-F5-REST-Coordination-Id: {{transID}}
+
+###
+
+POST {{ baseUrl }}/ltm/pool
+Authorization: {{ basic_auth }}
+X-F5-REST-Coordination-Id: {{transID}}
+
+{
+    "allowNat": "yes",
+    "allowSnat": "yes",
+    "ignorePersistedWeight": "disabled",
+    "ipTosToClient": "pass-through",
+    "ipTosToServer": "pass-through",
+    "kind": "tm:ltm:pool:poolstate",
+    "linkQosToClient": "pass-through",
+    "linkQosToServer": "pass-through",
+    "loadBalancingMode": "round-robin",
+    "minActiveMembers": 0,
+    "minUpMembers": 0,
+    "minUpMembersAction": "failover",
+    "minUpMembersChecking": "disabled",
+    "monitor": "/Common/tcp",
+    "name": "file-servers",
+    "partition": "Common",
+    "queueDepthLimit": 0,
+    "queueOnConnectionLimit": "disabled",
+    "queueTimeLimit": 0,
+    "reselectTries": 0,
+    "serviceDownAction": "none",
+    "slowRampTime": 10,
+    "members": [
+        {
+            "address": "10.250.11.185",
+            "connectionLimit": 0,
+            "dynamicRatio": 1,
+            "ephemeral": "false",
+            "inheritProfile": "enabled",
+            "kind": "tm:ltm:pool:members:membersstate",
+            "logging": "disabled",
+            "monitor": "default",
+            "name": "10.250.11.185:80",
+            "partition": "Common",
+            "priorityGroup": 0,
+            "rateLimit": "disabled"
+        }
+    ]
+}
+
+###
+
+POST {{ baseUrl }}/ltm/virtual
+Authorization: {{ basic_auth }}
+X-F5-REST-Coordination-Id: {{transID}}
+
+{
+  "kind": "tm:ltm:virtual:virtualstate",
+  "name": "file-servervs",
+  "partition": "Common",
+  "fullPath": "/Common/file-servervs",
+  "addressStatus": "yes",
+  "autoLasthop": "default",
+  "bwcPolicy": "/Common/kbyte",
+  "cmpEnabled": "yes",
+  "connectionLimit": 0,
+  "destination": "/Common/10.250.18.107:80",
+  "enabled": true,
+  "evictionProtected": "disabled",
+  "gtmScore": 0,
+  "ipProtocol": "tcp",
+  "mask": "255.255.255.255",
+  "mirror": "disabled",
+  "mobileAppTunnel": "disabled",
+  "nat64": "disabled",
+  "pool": "/Common/file-servers",
+  "rateLimit": "disabled",
+  "rateLimitDstMask": 0,
+  "rateLimitMode": "object",
+  "rateLimitSrcMask": 0,
+  "serversslUseSni": "disabled",
+  "serviceDownImmediateAction": "none",
+  "source": "0.0.0.0/0",
+  "sourceAddressTranslation": {
+    "type": "automap"
+  },
+  "sourcePort": "preserve",
+  "synCookieStatus": "not-activated",
+  "translateAddress": "enabled",
+  "translatePort": "enabled",
+  "vlansDisabled": true
+}
+
+
+
+###
+
+PATCH {{baseUrl}}/transaction/{{transID}}
+Authorization: {{basic_auth}}
+
+{
+    "state": "VALIDATING"
+}
+
+

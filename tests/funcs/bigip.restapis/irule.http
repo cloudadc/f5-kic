@@ -1,0 +1,37 @@
+### irules
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/rule/~Common~irule_func
+Authorization: Basic admin:F5@osp2019
+
+
+### create irule
+
+POST https://10.250.118.253:8443/mgmt/tm/ltm/rule/
+Authorization: Basic admin:F5@osp2019
+
+{
+    "kind": "tm:ltm:rule:rulestate",
+    "name": "my-irule",
+    "apiAnonymous": "when CLIENT_ACCEPTED {\n  if { [IP::addr [IP::client_addr] equals 10.10.10.10] } {\n    pool mysnat-pool\n  }\n}"
+}
+
+### delete irule
+
+DELETE https://10.250.118.253:8443/mgmt/tm/ltm/rule/~Common~my-irule
+Authorization: Basic admin:F5@osp2019
+
+
+#### POST /tm/ltm/rule/~cistest18~app-1~test001_app-v1-svc_irules
+POST https://10.250.18.105:8443/mgmt/tm/ltm/rule/
+Content-Type: application/json
+Authorization: Basic YWRtaW46UEBzc3cwcmQxMjM=
+
+{"apiAnonymous":"when CLIENT_ACCEPTED { if {[expr {[expr {0xffffffff \u0026  [crc32 [IP::client_addr]]}] % 100}] < 25} { pool /Common/a  } else {  pool /Common/b }}","expand":true,"name":"test001_app-v1-svc_irules","partition":"Common"}
+
+# {"apiAnonymous":"when CLIENT_ACCEPTED { if {[expr {[expr {0xffffffff \u0026 [crc32 [IP::client_addr]]}] % 100}] \u003c 25} { pool /Common/a  } else {  pool /Common/b }}","expand":true,"name":"test001_app-v1-svc_irules","partition":"cistest18","subPath":"app-1"}
+
+####
+
+DELETE https://10.250.18.105:8443/mgmt/tm/ltm/rule/~Common~test001_app-v1-svc_irules
+Content-Type: application/json
+Authorization: Basic YWRtaW46UEBzc3cwcmQxMjM=

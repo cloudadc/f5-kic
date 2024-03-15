@@ -1,0 +1,205 @@
+@baseUrl = https://10.250.15.180/mgmt/tm
+@basic_auth = Basic admin:P@ssw0rd123
+@transID = {{create_transaction.response.body.transId}}
+
+###
+
+# @name create_transaction
+POST {{baseUrl}}/transaction
+Authorization: {{basic_auth}}
+
+{}
+
+### CREATE kinds of post commands
+
+POST {{baseUrl}}/ltm/monitor/http
+Authorization: {{basic_auth}}
+X-F5-REST-Coordination-Id: {{transID}}
+
+{
+    "name": "http-monitor-in-trans-b"
+}
+
+
+### delete kinds of post commands
+
+DELETE {{baseUrl}}/ltm/monitor/http/~Common~http-monitor-in-trans-b
+Authorization: {{basic_auth}}
+X-F5-REST-Coordination-Id: {{transID}}
+
+
+
+###
+
+PATCH {{baseUrl}}/transaction/{{transID}}
+Authorization: {{basic_auth}}
+
+{
+    "state": "VALIDATING"
+}
+
+###
+
+POST https://10.250.15.180/mgmt/shared/appsvcs/declare
+Authorization: {{basic_auth}}
+Content-Type: application/json
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.29.0",
+        "id": "123abcd",
+        "label": "f5_test003",
+        "remark": "HTTP application",
+        "f5_test003": {
+            "class": "Tenant",
+            "f5_test001": {
+                "class": "Application",
+                "template": "generic",
+                "app_svc_vip": {
+                    "class": "Service_Address",
+                    "virtualAddress": "172.16.10.10",
+                    "arpEnabled": true
+                },
+                "app_svc_vs_demo1": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        {"use": "app_svc_vip"}
+                    ],
+                    "virtualPort": 81
+                },
+                "app_svc_vs_demo2": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "172.16.10.10"
+                    ],
+                    "virtualPort": 82
+                }
+            },
+            "f5_test002": {
+                "class": "Application",
+                "template": "generic",
+                "app_svc_vs_demo1": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "172.16.10.10"
+                    ],
+                    "virtualPort": 83
+                },
+                "app_svc_vs_demo2": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "172.16.10.10"
+                    ],
+                    "virtualPort": 84
+                }
+            }
+        }
+    }
+}
+
+# {
+#     "class": "AS3",
+#     "action": "deploy",
+#     "persist": true,
+#     "declaration": {
+#         "class": "ADC",
+#         "schemaVersion": "3.29.0",
+#         "id": "123abcd",
+#         "label": "f5_test003",
+#         "remark": "HTTP application",
+#         "f5_test003": {
+#             "class": "Tenant",
+#             "f5_test001": {
+#                 "class": "Application",
+#                 "template": "generic",
+#                 "app_svc_vs_demo1": {
+#                     "class": "Service_HTTP",
+#                     "virtualAddresses": [
+#                         "172.16.10.10"
+#                     ],
+#                     "virtualPort": 81
+#                 },
+#                 "app_svc_vs_demo2": {
+#                     "class": "Service_HTTP",
+#                     "virtualAddresses": [
+#                         "172.16.10.10"
+#                     ],
+#                     "virtualPort": 82
+#                 }
+#             },
+#             "f5_test002": {
+#                 "class": "Application",
+#                 "template": "generic",
+#                 "app_svc_vs_demo1": {
+#                     "class": "Service_HTTP",
+#                     "virtualAddresses": [
+#                         "172.16.10.10"
+#                     ],
+#                     "virtualPort": 83
+#                 },
+
+#                 "app_svc_vs_demo2": {
+#                     "class": "Service_HTTP",
+#                     "virtualAddresses": [
+#                         "172.16.10.10"
+#                     ],
+#                     "virtualPort": 84
+#                 }
+#             }
+#         }
+#     }
+# }
+
+
+#### POST /tm/ltm/virtual
+POST https://10.250.18.105:8443/mgmt/tm/ltm/virtual
+Authorization: Basic YWRtaW46UEBzc3cwcmQxMjM=
+Content-Type: application/json
+
+{
+    "addressStatus": "yes",
+    "connectionLimit": 0,
+    "description": "SNAT_app",
+    "destination": "192.0.2.100:53",
+    "enable": true,
+    "httpMrfRoutingEnabled": false,
+    "ipProtocol": "udp",
+    "lastHop": "default",
+    "mirror": "disabled",
+    "name": "test_service",
+    "nat64": "disabled",
+    "partition": "Sample_SNAT_Pool",
+    "persist": [
+        {
+            "name": "source_addr"
+        }
+    ],
+    "pool": "udp_pool",
+    "profiles": [
+        "customUDPProfile"
+    ],
+    "rateLimit": 0,
+    "serviceDownImmediateAction": "none",
+    "shareAddresses": false,
+    "sourceAddressTranslation": {
+        "pool": "CreateSnatPool",
+        "type": "snat"
+    },
+    "sourcePort": "preserve",
+    "subPath": "SNAT_app",
+    "translateAddress": "enabled",
+    "translatePort": "enabled",
+    "virtualType": "standard"
+}
+
+#### GET last updates
+GET https://10.250.18.105:8443/mgmt/tm/sys/folder
+Authorization: Basic YWRtaW46UEBzc3cwcmQxMjM=
+Content-Type: application/json
+
+#1662251085397625
+#1662251125549906

@@ -1,0 +1,137 @@
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rest-service-http-configmap
+  namespace: default
+  labels:
+    # f5kic-resource: "true"
+    # f5kic-resource-type: "as3"
+    f5type: virtual-server
+    as3: "true"
+data:
+  # service_namespace: default
+  # service_name: rest-service-http
+  template: |
+     {
+        "class": "AS3",
+        "action": "deploy",
+        "persist": true,
+        "declaration": {
+            "class": "ADC",
+            "schemaVersion": "3.18.0",
+            "id": "veconfig-nsgroup1",
+            "namespace_name": {
+                "class": "Tenant",
+                "service_name_app": {
+                    "class": "Application",
+                    "template": "generic",
+                    "service_name_vs": {
+                        "class": "Service_HTTP",
+                        "persistenceMethods": [
+                            "cookie"
+                        ],
+                        "virtualAddresses": [
+                            "10.250.17.143"
+                        ],
+                        "virtualPort": 80,
+                        "profileMultiplex": {
+                            "use": "service_name_oneconnectprofile"
+                        },
+                        "profileHTTP": {
+                            "use": "service_name_httpprofile"
+                        },
+                        "snat": "self",
+                        "pool": "service_name_pool"
+                    },
+                    "service_name_pool": {
+                        "class": "Pool",
+                        "monitors": [
+                            {
+                                "use": "service_name_monitor"
+                            }
+                        ],
+                        "loadBalancingMode": "least-connections-member",
+                        "members": [
+                            {
+                                "servicePort": 80,
+                                "serverAddresses": []
+                            }
+                        ]
+                    },
+                    "service_name_httpprofile": {
+                        "class": "HTTP_Profile",
+                        "xForwardedFor": true
+                    },
+                    "service_name_oneconnectprofile": {
+                        "class": "Multiplex_Profile",
+                        "sourceMask": "255.255.255.255",
+                        "maxConnectionReuse": 5
+                    },
+                    "service_name_monitor": {
+                        "class": "Monitor",
+                        "monitorType": "http",
+                        "interval": 5,
+                        "timeout": 16,
+                        "send": "GET / HTTP/1.0\\r\\nHost:vhost.example.com\\r\\n\\r\\n",
+                        "receive": "200 OK"
+                    }
+                }
+            }
+        }
+      }
+
+
+#least-connections-member
+#round-robin
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rest-service-http-deployment
+  namespace: default
+  # labels:
+  #   f5kic-resource: "true"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      run: rest-service-http
+  template:
+    metadata:
+      labels:
+        run: rest-service-http
+    spec:
+      containers:
+      - image: "nginx:latest"
+        imagePullPolicy: IfNotPresent
+        name: rest-service-http
+        ports:
+        - containerPort: 80
+          protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: rest-service-http
+  namespace: default
+  labels:
+    # f5kic-resource: "true"
+    cis.f5.com/as3-tenant: namespace_name
+    cis.f5.com/as3-app: service_name_app
+    cis.f5.com/as3-pool: service_name_pool
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: rest-service-http
+  sessionAffinity: None
+  type: ClusterIP

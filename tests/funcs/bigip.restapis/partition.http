@@ -1,0 +1,101 @@
+
+
+###
+
+PATCH https://10.250.118.253:8443/mgmt/tm/sys/folder/~zongzw-partition
+Authorization: Basic admin:F5@osp2019
+
+{
+    "name": "zongzw-partition",
+    "partition": "/"
+}
+
+### 
+
+GET https://10.250.118.253:8443/mgmt/tm/sys/folder/~zongzw-partition
+Authorization: Basic admin:F5@osp2019
+
+###
+
+POST https://10.250.118.253:8443/mgmt/tm/sys/folder
+Authorization: Basic admin:F5@osp2019
+
+{
+    "name": "zongzw-folder",
+    "partition": "zongzw-partition"
+}
+
+###
+
+POST https://10.250.118.253:8443/mgmt/tm/ltm/pool
+Authorization: Basic admin:F5@osp2019
+
+{
+    "name": "zongzw-pool",
+    "partition": "zongzw-partition",
+    "subPath": "zongzw-folder"
+}
+
+
+###
+
+DELETE https://10.250.118.253:8443/mgmt/tm/ltm/pool/~zongzw-partition~zongzw-folder~zongzw-pool
+Authorization: Basic admin:F5@osp2019
+
+
+###
+
+DELETE https://10.250.118.253:8443/mgmt/tm/sys/folder/~zongzw-partition~zongzw-folder
+Authorization: Basic admin:F5@osp2019
+
+
+###
+
+DELETE https://10.250.118.253:8443/mgmt/tm/sys/folder/~zongzw-partition
+Authorization: Basic admin:F5@osp2019
+
+###
+
+POST https://10.250.118.253:8443/mgmt/tm/sys/folder
+Authorization: Basic admin:F5@osp2019
+
+{
+    "name": "namespace_name",
+    "partition": "/"
+}
+
+###
+
+PATCH https://10.250.118.253:8443/mgmt/tm/sys/folder
+Authorization: Basic admin:F5@osp2019
+
+{
+    "name": "namespace_name",
+    "partition": "/"
+}
+
+###
+
+PATCH https://10.250.118.253:8443/mgmt/tm/sys/folder
+Authorization: Basic admin:F5@osp2019
+
+{
+    "name": "zongzw-folder",
+    "partition": "zongzw-partition"
+}
+
+###
+
+GET https://10.250.118.253:8443/mgmt/tm/sys/folder/~namespace_name~service_name_app
+Authorization: Basic admin:F5@osp2019
+
+
+###
+
+GET https://10.250.118.253:8443/mgmt/tm/sys/folder/~namespace_name
+Authorization: Basic admin:F5@osp2019
+
+###
+
+DELETE https://10.250.118.253:8443/mgmt/tm/sys/folder/~namespace_name
+Authorization: Basic admin:F5@osp2019

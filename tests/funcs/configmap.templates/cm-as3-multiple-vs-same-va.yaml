@@ -1,0 +1,69 @@
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-as3-udp-std-template-configmap
+  namespace: default
+  labels:
+    f5type: virtual-server
+    as3: "true"
+data:
+  template: |
+    {
+        "class": "AS3",
+        "action": "deploy",
+        "persist": true,
+        "declaration": {
+            "class": "ADC",
+            "schemaVersion": "3.29.0",
+            "id": "123abcd",
+            "label": "f5_test003",
+            "remark": "HTTP application",
+            "f5_test003": {
+                "class": "Tenant",
+                "f5_test001": {
+                    "class": "Application",
+                    "template": "generic",
+                    "app_svc_vip": {
+                        "class": "Service_Address",
+                        "virtualAddress": "172.16.10.10",
+                        "arpEnabled": true
+                    },
+                    "app_svc_vs_demo1": {
+                        "class": "Service_HTTP",
+                        "virtualAddresses": [
+                            {"use": "app_svc_vip"}
+                        ],
+                        "virtualPort": 81
+                    },
+                    "app_svc_vs_demo2": {
+                        "class": "Service_HTTP",
+                        "virtualAddresses": [
+                            "172.16.10.10"
+                        ],
+                        "virtualPort": 82
+                    }
+                },
+                "f5_test002": {
+                    "class": "Application",
+                    "template": "generic",
+                    "app_svc_vs_demo1": {
+                        "class": "Service_HTTP",
+                        "virtualAddresses": [
+                            "172.16.10.10"
+                        ],
+                        "virtualPort": 83
+                    },
+                    "app_svc_vs_demo2": {
+                        "class": "Service_HTTP",
+                        "virtualAddresses": [
+                            "172.16.10.10"
+                        ],
+                        "virtualPort": 84
+                    }
+                }
+            }
+        }
+    }

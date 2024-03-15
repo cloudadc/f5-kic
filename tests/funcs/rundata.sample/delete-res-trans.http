@@ -1,0 +1,75 @@
+@transId = {{create_transaction.response.body.transId}}
+
+###
+
+# @name create_transaction
+POST https://10.250.118.253:8443/mgmt/tm/transaction
+Authorization: Basic YWRtaW46RjVAb3NwMjAxOQ==
+
+{}
+
+###
+DELETE https://10.250.118.253:8443/mgmt/tm/ltm/virtual/~namespace_name~service_name_app~service_name_vs_0
+Authorization: Basic YWRtaW46RjVAb3NwMjAxOQ==
+Content-Type: application/json
+X-F5-REST-Coordination-Id: {{transId}}
+###
+
+###
+DELETE https://10.250.118.253:8443/mgmt/tm/ltm/snatpool/~namespace_name~service_name_app~service_name_vs_self_0
+Authorization: Basic YWRtaW46RjVAb3NwMjAxOQ==
+Content-Type: application/json
+X-F5-REST-Coordination-Id: {{transId}}
+###
+
+###
+DELETE https://10.250.118.253:8443/mgmt/tm/ltm/profile/http/~namespace_name~service_name_app~service_name_httpprofile
+Authorization: Basic YWRtaW46RjVAb3NwMjAxOQ==
+Content-Type: application/json
+X-F5-REST-Coordination-Id: {{transId}}
+###
+
+###
+DELETE https://10.250.118.253:8443/mgmt/tm/ltm/profile/one-connect/~namespace_name~service_name_app~service_name_oneconnectprofile
+Authorization: Basic YWRtaW46RjVAb3NwMjAxOQ==
+Content-Type: application/json
+X-F5-REST-Coordination-Id: {{transId}}
+###
+
+###
+DELETE https://10.250.118.253:8443/mgmt/tm/ltm/pool/~namespace_name~service_name_app~service_name_pool
+Authorization: Basic YWRtaW46RjVAb3NwMjAxOQ==
+Content-Type: application/json
+X-F5-REST-Coordination-Id: {{transId}}
+###
+
+###
+DELETE https://10.250.118.253:8443/mgmt/tm/ltm/monitor/http/~namespace_name~service_name_app~service_name_monitor
+Authorization: Basic YWRtaW46RjVAb3NwMjAxOQ==
+Content-Type: application/json
+X-F5-REST-Coordination-Id: {{transId}}
+###
+
+###
+DELETE https://10.250.118.253:8443/mgmt/tm/sys/folder/~namespace_name~service_name_app
+Authorization: Basic YWRtaW46RjVAb3NwMjAxOQ==
+Content-Type: application/json
+X-F5-REST-Coordination-Id: {{transId}}
+###
+
+###
+DELETE https://10.250.118.253:8443/mgmt/tm/sys/folder/~namespace_name
+Authorization: Basic YWRtaW46RjVAb3NwMjAxOQ==
+Content-Type: application/json
+X-F5-REST-Coordination-Id: {{transId}}
+###
+
+
+###
+
+PATCH https://10.250.118.253:8443/mgmt/tm/transaction/{{transId}}
+Authorization: Basic YWRtaW46RjVAb3NwMjAxOQ==
+
+{
+    "state": "VALIDATING"
+}

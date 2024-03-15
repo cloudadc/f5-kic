@@ -1,0 +1,49 @@
+*k8s.io/api/core/v1.Service {
+    TypeMeta: k8s.io/apimachinery/pkg/apis/meta/v1.TypeMeta {
+        Kind: "", APIVersion: ""
+    }, 
+    ObjectMeta: k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta {
+        Name: "rest-service", 
+        GenerateName: "", 
+        Namespace: "default", 
+        SelfLink: "/api/v1/namespaces/default/services/rest-service", 
+        UID: "24ece44c-a55f-4f36-b611-f65400532cb4", 
+        ResourceVersion: "24092946", Generation: 0, 
+        CreationTimestamp: (*"k8s.io/apimachinery/pkg/apis/meta/v1.Time")(0xc00003f208), 
+        DeletionTimestamp: *k8s.io/apimachinery/pkg/apis/meta/v1.Time nil, 
+        DeletionGracePeriodSeconds: *int64 nil, 
+        Labels: map[string]string [...], 
+        Annotations: map[string]string [...], 
+        OwnerReferences: []k8s.io/apimachinery/pkg/apis/meta/v1.OwnerReference len: 0, cap: 0, nil, 
+        Finalizers: []string len: 0, cap: 0, nil, 
+        ClusterName: "", 
+        ManagedFields: []k8s.io/apimachinery/pkg/apis/meta/v1.ManagedFieldsEntry len: 0, cap: 0, nil
+    }, 
+    Spec: k8s.io/api/core/v1.ServiceSpec {
+        Ports: []k8s.io/api/core/v1.ServicePort len: 2, cap: 4, [
+            (*"k8s.io/api/core/v1.ServicePort")(0xc0005aa420),
+            (*"k8s.io/api/core/v1.ServicePort")(0xc0005aa478)
+        ], 
+        Selector: map[string]string [...], 
+        ClusterIP: "10.43.92.25", 
+        ClusterIPs: []string len: 0, cap: 0, nil, 
+        Type: "ClusterIP", 
+        ExternalIPs: []string len: 0, cap: 0, nil, 
+        SessionAffinity: "None", LoadBalancerIP: "", 
+        LoadBalancerSourceRanges: []string len: 0, cap: 0, nil, 
+        ExternalName: "", 
+        ExternalTrafficPolicy: "", 
+        HealthCheckNodePort: 0, 
+        PublishNotReadyAddresses: false, 
+        SessionAffinityConfig: *k8s.io/api/core/v1.SessionAffinityConfig nil, 
+        IPFamilies: []k8s.io/api/core/v1.IPFamily len: 0, cap: 0, nil, 
+        IPFamilyPolicy: *k8s.io/api/core/v1.IPFamilyPolicyType nil, 
+        AllocateLoadBalancerNodePorts: *bool nil, 
+        LoadBalancerClass: *string nil, 
+        InternalTrafficPolicy: *k8s.io/api/core/v1.ServiceInternalTrafficPolicyType nil
+    }, 
+    Status: k8s.io/api/core/v1.ServiceStatus {
+        LoadBalancer: (*"k8s.io/api/core/v1.LoadBalancerStatus")(0xc00003f3a8), 
+        Conditions: []k8s.io/apimachinery/pkg/apis/meta/v1.Condition len: 0, cap: 0, nil
+    }
+}

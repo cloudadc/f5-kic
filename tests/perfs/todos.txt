@@ -1,0 +1,6 @@
+refer to
+https://github.com/kubernetes/client-go/blob/master/examples/fake-client/main_test.go
+
+also, we can fake BIG-IP iControl Rest.
+
+So that run the rest in a "fast && standalone" way.

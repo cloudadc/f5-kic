@@ -1,0 +1,27 @@
+# docker build -t k8s-bigip-ctlr-c:latest -f build/Dockerfile-arm64v8 .
+
+# FROM alpine:3.18.0
+FROM arm64v8/alpine:3.18.4
+# FROM arm64v8/ubuntu:latest
+
+# FROM scratch  
+# docker: Error response from daemon: 
+    # failed to create shim task: 
+    #     OCI runtime create failed: 
+    #         runc create failed: 
+    #             unable to start container process: 
+    #                 exec: "/f5-kic-linux": stat /f5-kic-linux: no such file or directory: 
+    #                     unknown.
+
+
+COPY f5kic/f5-kic-linux /
+
+RUN adduser -D ctlr && \
+    chown ctlr /f5-kic-linux && \
+    chmod 755 /f5-kic-linux
+
+RUN chmod 755 /f5-kic-linux
+
+RUN date -Iseconds > /build
+
+USER ctlr

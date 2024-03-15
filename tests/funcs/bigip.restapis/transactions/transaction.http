@@ -1,0 +1,159 @@
+@baseUrl = https://10.250.118.253:8443/mgmt/tm
+@basic_auth = Basic admin:F5@osp2019
+@transID = {{create_transaction.response.body.transId}}
+
+###
+
+# @name create_transaction
+POST {{baseUrl}}/transaction
+Authorization: {{basic_auth}}
+
+{}
+
+### CREATE kinds of post commands
+
+POST {{baseUrl}}/ltm/monitor/http
+Authorization: {{basic_auth}}
+X-F5-REST-Coordination-Id: {{transID}}
+
+{
+    "name": "http-monitor-in-trans-{{$timestamp}}"
+}
+
+###
+
+GET {{baseUrl}}/transaction/{{transID}}
+Authorization: {{basic_auth}}
+
+###
+
+GET {{baseUrl}}/transaction/{{transID}}/commands
+Authorization: {{basic_auth}}
+
+
+###
+
+PATCH {{baseUrl}}/transaction/{{transID}}
+Authorization: {{basic_auth}}
+
+{
+    "state": "VALIDATING"
+}
+
+############### creation for bundle of resources
+
+### create http monitor
+POST {{baseUrl}}/ltm/monitor/http
+Authorization: {{basic_auth}}
+X-F5-REST-Coordination-Id: {{transID}}
+
+{
+    "name": "monitor-in-trans-http"
+}
+
+### create pool
+POST {{baseUrl}}/ltm/pool
+Authorization: {{basic_auth}}
+X-F5-REST-Coordination-Id: {{transID}}
+
+{
+    "kind": "tm:ltm:pool:poolstate",
+    "name": "my-trans-pool",
+    "monitor": "monitor-in-trans-http",
+    "serviceDownAction": "reset",
+    "loadBalancingMode": "least-connections-member",
+    "members": [
+        {
+            "kind": "tm:ltm:pool:members:membersstate",
+            "name": "12.23.4.52:80",
+            "address": "12.23.4.52"
+        }
+    ]
+}
+
+### create http profile
+POST {{baseUrl}}/ltm/profile/http
+Authorization: {{basic_auth}}
+X-F5-REST-Coordination-Id: {{transID}}
+
+{
+    "kind": "tm:ltm:profile:http:httpstate",
+    "name": "my-http",
+    "acceptXff": "enabled",
+    "fallbackHost": "www.zong.com",
+    "fallbackStatusCodes": ["400"],
+    "hsts": {
+        "includeSubdomains": "enabled",
+        "maximumAge": 1607040413,
+        "mode": "disabled",
+        "preload": "enabled"
+    },
+    "insertXforwardedFor": "enabled",
+    "headerErase": "none",
+    "headerInsert": "cm:abc123"
+}
+
+### create virtual
+
+POST {{baseUrl}}/ltm/virtual
+Authorization: {{basic_auth}}
+X-F5-REST-Coordination-Id: {{transID}}
+
+{
+    "kind": "tm:ltm:virtual:virtualstate",
+    "name": "my-virtual-trans_customized",
+    "destination": "6.7.8.9:9000",
+    "ipProtocol": "tcp",
+    "profilesReference": {
+        "items":[
+             {"name": "my-http"}
+         ],
+         "isSubcollection": true
+    },
+    "pool": "my-trans-pool",
+    "sourceAddressTranslation": {
+        "type": "automap"
+    }
+}
+
+### transaction delete partition
+
+###
+
+GET https://10.250.118.253:8443/mgmt/tm/sys/folder/~namespace_name~service_name_app
+Authorization: Basic admin:F5@osp2019
+
+
+###
+
+GET https://10.250.118.253:8443/mgmt/tm/sys/folder/~namespace_name
+Authorization: Basic admin:F5@osp2019
+
+###
+
+DELETE https://10.250.118.253:8443/mgmt/tm/sys/folder/~namespace_name
+Authorization: Basic admin:F5@osp2019
+
+
+###
+
+POST https://10.250.118.253:8443/mgmt/tm/sys/folder/
+Authorization: Basic admin:F5@osp2019
+
+{
+    "name": "test-del-partition",
+    "partition": "/"
+}
+
+###
+
+DELETE https://10.250.118.253:8443/mgmt/tm/sys/folder/~test-del-partition
+Authorization: Basic admin:F5@osp2019
+X-F5-REST-Coordination-Id: {{transID}}
+
+
+### GET virtual
+
+GET {{baseUrl}}/ltm/virtual
+Authorization: {{basic_auth}}
+X-F5-REST-Coordination-Id: {{transID}}

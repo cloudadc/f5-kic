@@ -1,0 +1,125 @@
+# This file aims to tell: 
+#
+## how to run test cases
+## how to write test cases.
+#
+## ================ How to run test cases ================
+#
+# 1. prepare python environment
+#
+# 1) The main program is test.py
+# 2) run it with python3
+# 3) install the following pip package:  
+#    pip install PyYAML Jinja2 requests urllib3
+#
+# 2. prepare k8s and bigip
+#
+# 1) setup k8s & bigip with guide in `${workspaceFolder}/README.md`
+# 2) create config file: ./env, with content:
+#     BIGIP_URL=https://10.250.18.105:8443
+#     BIGIP_USERNAME=admin
+#     BIGIP_PASSWORD=P@ssw0rd123
+#     KUBE_CONFIG_FILEPATH=~/.kube/config
+#    KUBE_CONFIG_FILEPATH should be the default path used by kubectl
+#
+# 3. run the a single testcase
+#
+# `python3 test.py --config=./env <case_file_path>`:
+# like: python test.py --config environment/labs/k8s-1-19/env testcases/multiple-resources/92.service-association.yaml
+# this command would generate a tmp file `tmp-xx.xxxxx.yaml` for intermediate debugging. can be deleted anytime.
+#
+# 4. run all testcases
+#
+# with --config parameter only, test.py will run all the test cases under ./testcases
+# `python3 test.py --config=./env`:
+# python test.py --config environment/labs/k8s-1-19/env
+
+## ================ How to wirte testcases ================
+
+# - name: simple virtual                                                                  1. test case name 
+#   jinja2: configmap.yaml.j2                                                             2. .j2 template relative path, relative to ./templates
+#   variables:                                                                            2.1 variables for rendering template content, see '{{ tenant_name }}', it can also be used to render values in jinja2 file under templates folder.
+#     tenant_name: test-virtual-tenant                                                    2.2 see a complicate usecase in multiple-resources/90.huge-size-resources.yaml
+#   template:                                                                             3. template content, will be placed into {{ case_template }}
+#     {                                                                                   3.1 this can be string type(plusing '|' after 'template', or a json/yaml format data.)
+#         "class": "AS3",
+#         "action": "deploy",
+#         "persist": true,
+#         "declaration": {
+#             "class": "ADC",
+#             "schemaVersion": "3.19.0",
+#             "id": "systest-automation-configmap",
+#             "remark": "HTTP application",
+#             "{{ tenant_name }}": {
+#                 "class": "Tenant",
+#                 "myapp": {
+#                     "class": "Application",
+#                     "template": "generic", 
+#                     "myvirtual": {
+#                         "class": "Service_HTTP",
+#                         "virtualAddresses": [
+#                             "10.123.234.11"
+#                         ],
+#                         "virtualPort": 80
+#                     }
+#                 }
+#             }
+#         }
+#     }
+#   checks:                                                                               4. check items
+#     apply:                                                                              5. the checks after "kubectl apply -f -"
+#       - uri: /mgmt/tm/ltm/virtual/~test-virtual-tenant~myapp~myvirtual                  5.1 iControl REST API of the resource
+#         timeout: 30                                                                     5.2 the times to wait for meeting the result (optional, default: TIMEOUT defined in test.py), this is usually useful for large amount execution.
+#         status: 200                                                                     5.3 assert status should be 200
+#         body:                                                                           5.4 assert body contains..   [Optional]
+#           destination: /test-virtual-tenant/10.123.234.11:80                            5.5 assert property should be the same, the property type can be 'str' 'dict', 'list'
+#     delete:                                                                             6. the checks after "kubectl delete -f -", if there are 2 cases in a file, this part will not be checked unless the the case is the last one.
+#       - uri: /mgmt/tm/sys/folder/~test-virtual-tenant                                   6.1 the folder should prefix with '~' ** important **
+#         status: 404                                                                     6.2 the resource should be not found.
+
+# - name: simple virtual update                                                           7. the second case(usually used as an update case), in the same file, the partition must be the same, OR the tenant in the first testcase would be left on BIG-IP
+#   jinja2: configmap.yaml.j2
+#   template:
+#     {
+#         "class": "AS3",
+#         "action": "deploy",
+#         "persist": true,
+#         "declaration": {
+#             "class": "ADC",
+#             "schemaVersion": "3.19.0",
+#             "id": "systest-automation-configmap",
+#             "remark": "HTTP application",
+#             "test-virtual-tenant": {
+#                 "class": "Tenant",
+#                 "myapp": {
+#                     "class": "Application",
+#                     "template": "generic", 
+#                     "myvirtual": {
+#                         "class": "Service_HTTP",
+#                         "virtualAddresses": [
+#                             "10.123.234.11"
+#                         ],
+#                         "virtualPort": 81
+#                     }
+#                 }
+#             }
+#         }
+#     }
+#   checks:
+#     apply:
+#       - uri: /mgmt/tm/ltm/virtual/~test-virtual-tenant~myapp~myvirtual
+#         status: 200
+#         body:
+#           destination: /test-virtual-tenant/10.123.234.11:81
+#     delete:
+#       - uri: /mgmt/tm/sys/folder/~test-virtual-tenant
+#         status: 404
+#   setup:                                                                                8. setup is a list, used to execute some setups pre the test
+#     - kubectl create namespace namespace-1
+#     - kubectl create namespace namespace-2
+#     - kubectl label ns/namespace-2 resource.zone=deployment
+#   teardown:                                                                             9. teardown is a list, used to exeucte some teardowns after the test
+#     - kubectl delete namespace namespace-1
+#     - kubectl delete namespace namespace-2
+#   k8s_version:                                                                         10. the limited versions for running the testcase, if no k8s_version, there is no version limit.
+#     - v1.27

@@ -1,0 +1,8 @@
+###
+
+POST https://10.250.18.105:8443/mgmt/tm/sys/config
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "command": "save"
+}

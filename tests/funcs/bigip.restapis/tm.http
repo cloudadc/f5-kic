@@ -1,0 +1,10 @@
+###
+
+GET https://10.250.118.253:8443/mgmt/tm/
+Authorization: Basic admin:F5@osp2019
+
+
+###
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm
+Authorization: Basic admin:F5@osp2019

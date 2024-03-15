@@ -1,0 +1,133 @@
+{
+    "namespace_name": {
+        "service_name_app": {
+            "ltm/monitor/http/service_name_monitor": {
+                "adaptive": "disabled",
+                "adaptiveDivergenceMilliseconds": 500,
+                "adaptiveDivergenceType": "relative",
+                "adaptiveDivergenceValue": 100,
+                "adaptiveLimit": 1000,
+                "adaptiveSamplingTimespan": 180,
+                "interval": 5,
+                "ipDscp": 0,
+                "name": "service_name_monitor",
+                "recv": "200 OK",
+                "recvDisable": "",
+                "reverse": "disabled",
+                "send": "GET / HTTP/1.0\\r\\nHost:vhost.example.com\\r\\n\\r\\n",
+                "targetAddress": "",
+                "targetPort": 0,
+                "timeUntilUp": 0,
+                "timeout": 16,
+                "transparent": "disabled",
+                "upInterval": 0
+            },
+            "ltm/pool/service_name_pool": {
+                "allowNat": "yes",
+                "allowSnat": "yes",
+                "loadBalancingMode": "least-connections-member",
+                "members": [],
+                "minActiveMembers": 1,
+                "minimumMonitors": 1,
+                "monitor": "/namespace_name/service_name_app/service_name_monitor",
+                "name": "service_name_pool",
+                "reselectTries": 0,
+                "serviceDownAction": "none",
+                "slowRampTime": 10
+            },
+            "ltm/profile/http/service_name_httpprofile": {
+                "acceptXff": "disabled",
+                "hstsIncludeSubdomains": true,
+                "hstsInsert": false,
+                "hstsPeriod": 7862400,
+                "hstsPreload": false,
+                "insertXforwardedFor": "enabled",
+                "knownMethods": [
+                    "CONNECT",
+                    "DELETE",
+                    "GET",
+                    "HEAD",
+                    "LOCK",
+                    "OPTIONS",
+                    "POST",
+                    "PROPFIND",
+                    "PUT",
+                    "TRACE",
+                    "UNLOCK"
+                ],
+                "maxHeaderCount": 64,
+                "maxHeaderSize": 32768,
+                "maxRequests": 0,
+                "name": "service_name_httpprofile",
+                "oneconnectTransformations": "enabled",
+                "pipelineAction": "allow",
+                "proxyConnectEnabled": false,
+                "proxyType": "reverse",
+                "redirectRewrite": "none",
+                "requestChunking": "preserve",
+                "responseChunking": "selective",
+                "serverAgentName": "BigIP",
+                "truncatedRedirects": false,
+                "unknownMethodAction": "allow",
+                "viaRequest": "remove",
+                "viaResponse": "remove",
+                "webSocketMasking": "unmask",
+                "webSocketsEnabled": false
+            },
+            "ltm/profile/one-connect/service_name_oneconnectprofile": {
+                "idleTimeoutOverride": 0,
+                "limitType": "none",
+                "maxAge": 86400,
+                "maxReuse": 5,
+                "maxSize": 10000,
+                "name": "service_name_oneconnectprofile",
+                "sharePools": false,
+                "sourceMask": "255.255.255.255"
+            },
+            "ltm/snatpool/service_name_vs_self_0": {
+                "members": [
+                    "197.14.222.12"
+                ],
+                "name": "service_name_vs_self_0"
+            },
+            "ltm/virtual/service_name_vs_0": {
+                "addressStatus": true,
+                "connectionLimit": 0,
+                "destination": "197.14.222.12:80",
+                "enable": true,
+                "httpMrfRoutingEnabled": false,
+                "ipProtocol": "tcp",
+                "lastHop": "default",
+                "mirror": "none",
+                "name": "service_name_vs",
+                "nat64": "disabled",
+                "persist": [
+                    {
+                        "name": "cookie"
+                    }
+                ],
+                "pool": "/namespace_name/service_name_app/service_name_pool",
+                "profileTCP": "normal",
+                "profiles": [
+                    {
+                        "name": "/namespace_name/service_name_app/service_name_httpprofile"
+                    },
+                    {
+                        "name": "/namespace_name/service_name_app/service_name_oneconnectprofile"
+                    }
+                ],
+                "rateLimit": 0,
+                "serviceDownImmediateAction": "none",
+                "shareAddresses": false,
+                "sourceAddressTranslation": {
+                    "pool": "service_name_vs_self_0",
+                    "type": "snat"
+                },
+                "sourcePort": "preserve",
+                "translateAddress": "enabled",
+                "translatePort": "enabled",
+                "virtualType": "standard"
+            }
+        }
+    }
+}

@@ -1,0 +1,85 @@
+{% for num in range(index|int, count|int, 1) %}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: f5-vxlan-test-d{{ num }}
+  namespace: default
+  labels:
+    f5kic-resource: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: f5-vxlan-test-d{{ num }}
+  template:
+    metadata:
+      labels:
+        run: f5-vxlan-test-d{{ num }}
+    spec:
+      terminationGracePeriodSeconds: 150
+      containers:
+        - image: "nginx:latest"
+          imagePullPolicy: IfNotPresent
+          name: f5-vxlan-test-d{{ num }}
+          ports:
+            - containerPort: 80
+              protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: f5-vxlan-test-s{{ num }}
+  namespace: default
+  labels:
+    f5kic-resource: "true"
+spec:
+  ports:
+  - port: {{ 8080 + num }}
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: f5-vxlan-test-d{{ num }}
+  sessionAffinity: None
+  type: ClusterIP
+
+---
+
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: f5-vxlan-test-i{{ num }}
+  namespace: default
+  annotations:
+    virtual-server.f5.com/partition: "kubernetes"
+    virtual-server.f5.com/ip: {{ bigip_ipaddr }}
+    virtual-server.f5.com/http-port: "{{ 80 + num }}"
+    virtual-server.f5.com/ssl-redirect: "false"
+    # virtual-server.f5.com/balance: "round-robin"
+    virtual-server.f5.com/balance: "least-connections-member"
+    virtual-server.f5.com/health: |
+      [
+        {
+          "path":     "/",
+          "send":     "HTTP GET /",
+          "interval": 5,
+          "timeout":  10
+        }
+      ]
+  labels:
+    f5kic-resource: "true"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          serviceName: f5-vxlan-test-s{{ num }}
+          servicePort: 80
+
+
+{% endfor %}

@@ -1,0 +1,13 @@
+# KUBE_CONFIG_DIR=/Users/zong/.kube docker-compose up -d --remove-orphans --force-recreate
+
+version: '3'
+services:
+  k8s-bigip-ctlr-c-systest:
+    image: zongzw/ansible-env:latest-2022.06.23
+    container_name: k8s-bigip-ctlr-c-systest
+    entrypoint: /bin/bash
+    stdin_open: true
+    tty: true
+    volumes:
+      - ..:/workdir
+      - ${KUBE_CONFIG_DIR}:/root/.kube

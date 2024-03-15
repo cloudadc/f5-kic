@@ -1,0 +1,140 @@
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-as3-https-template-configmap
+  namespace: default
+  labels:
+    f5type: virtual-server
+    as3: "true"
+data:
+  template: |
+    {
+        "class": "AS3",
+        "action": "deploy",
+        "persist": true,
+        "declaration": {
+            "class": "ADC",
+            "updateMode": "selective",
+            "schemaVersion": "3.25.0",
+            "id": "irule-demo2",
+            "label": "harbor-https",
+            "test": {
+                "class": "Tenant",
+                "harbor-https": {
+                    "class": "Application",
+                    "template": "generic",
+                    "vs_harbor_443": {
+                        "class": "Service_HTTPS", 
+                        "virtualAddresses": [
+                            "172.25.53.81"
+                        ],
+                        "virtualPort": 443,
+                        "serverTLS": [ 
+                            {
+                                "bigip": "/Common/clientssl"
+                            }
+                        ],
+                        "profileHTTP": {
+                            "use": "http-harbor"
+                        },
+                        "profileMultiplex": {
+                            "bigip": "/Common/oneconnect"
+                        },
+                        "iRules": [
+                            "irules_harbor_443"
+                        ]
+                    },
+                    "irules_harbor_443": {
+                        "class": "iRule",
+                        "iRule": {
+                            "base64": "d2hlbiBIVFRQX1JFUVVFU1Qgew0KICBIVFRQOjpoZWFkZXIgaW5zZXJ0IFgtUmVhbC1JUCBbSVA6OnJlbW90ZV9hZGRyXQ0KICAgaWYgeyBbSFRUUDo6aG9zdF0gZXF1YWxzICJoYXJib3ItZGV2b3BzLXVhdC5zYW55LmNvbS5jbiIgfSB7DQogICAgICBpZiAgeyBbSFRUUDo6dXJpXSBzdGFydHNfd2l0aCAiL2FwaSIgfSB7IA0KICAgICAgIHBvb2wgcG9vbF9oYXJib3JfY29yZQ0KICAgICAgfQ0KICAgICAgZWxzZWlmIHsgW0hUVFA6OnVyaV0gc3RhcnRzX3dpdGggIi9zZXJ2aWNlIiB9IHsgDQogICAgICAgcG9vbCBwb29sX2hhcmJvcl9jb3JlDQogICAgICB9DQogICAgICBlbHNlaWYgeyBbSFRUUDo6dXJpXSBzdGFydHNfd2l0aCAiL3YyIiB9IHsgDQogICAgICAgcG9vbCBwb29sX2hhcmJvcl9jb3JlDQogICAgICB9DQogICAgICBlbHNlaWYgeyBbSFRUUDo6dXJpXSBzdGFydHNfd2l0aCAiL2NoYXJ0cmVwbyIgfSB7IA0KICAgICAgIHBvb2wgcG9vbF9oYXJib3JfY29yZQ0KICAgICAgfQ0KICAgICAgZWxzZWlmIHsgW0hUVFA6OnVyaV0gc3RhcnRzX3dpdGggIi9jIiB9IHsgDQogICAgICAgcG9vbCBwb29sX2hhcmJvcl9jb3JlDQogICAgICB9IGVsc2Ugew0KICAgICAgcG9vbCBwb29sX2hhcmJvcl9wb3J0YWwgDQogICAgIH0NCiAgIH0NCiB9"
+                        }
+                    },
+                    "http-harbor": {
+                        "class": "HTTP_Profile",
+                        "xForwardedFor": true,
+                        "insertHeader": {
+                            "name": "X-Forwarded-Proto",
+                            "value": "https"
+                        }
+                    },
+                    "pool_harbor_portal": {
+                        "class": "Pool",
+                        "loadBalancingMode": "least-connections-member",
+                        "monitors": [
+                            "http"
+                        ],
+                        "members": [
+                            {
+                                "servicePort": 80,
+                                "serverAddresses": []
+                            }
+                        ]
+                    },
+                    "pool_harbor_core": {
+                        "class": "Pool",
+                        "loadBalancingMode": "least-connections-member",
+                        "monitors": [
+                            "http"
+                        ],
+                        "members": [
+                            {
+                                "servicePort": 80,
+                                "serverAddresses": []
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cm-as3-https-template-deployment
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      run: cm-as3-https-template
+  template:
+    metadata:
+      labels:
+        run: cm-as3-https-template
+    spec:
+      containers:
+      - image: "nginx:latest"
+        imagePullPolicy: IfNotPresent
+        name: cm-as3-https-template
+        ports:
+        - containerPort: 80
+          protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cm-as3-https-template
+  namespace: default
+  labels:
+    cis.f5.com/as3-tenant: test
+    cis.f5.com/as3-app: harbor-https
+    cis.f5.com/as3-pool: pool_harbor_portal
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: cm-as3-https-template
+  sessionAffinity: None
+  type: ClusterIP

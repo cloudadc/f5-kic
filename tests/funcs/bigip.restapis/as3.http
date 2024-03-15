@@ -1,0 +1,1357 @@
+
+### remove all
+
+POST https://10.250.18.105:8443/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "remove"
+}
+
+
+###
+
+POST https://10.250.15.109/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.18.0",
+        "id": "veconfig-nsgroup1",
+        "namespace_name": {
+            "class": "Tenant",
+            "service_name_app": {
+                "class": "Application",
+                "template": "generic",
+                "service_name_vs": {
+                    "class": "Service_HTTP",
+                    "persistenceMethods": [
+                        "cookie"
+                    ],
+                    "virtualAddresses": [
+                        "197.14.222.12"
+                    ],
+                    "virtualPort": 80,
+                    "profileMultiplex": {
+                        "use": "service_name_oneconnectprofile"
+                    },
+                    "profileHTTP": {
+                        "use": "service_name_httpprofile"
+                    },
+                    "snat": "self",
+                    "pool": "service_name_pool"
+                },
+                "service_name_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        {
+                            "use": "service_name_monitor"
+                        }
+                    ],
+                    "loadBalancingMode": "least-connections-member",
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                },
+                "service_name_httpprofile": {
+                    "class": "HTTP_Profile",
+                    "xForwardedFor": true
+                },
+                "service_name_oneconnectprofile": {
+                    "class": "Multiplex_Profile",
+                    "sourceMask": "255.255.255.255",
+                    "maxConnectionReuse": 5
+                },
+                "service_name_monitor": {
+                    "class": "Monitor",
+                    "monitorType": "http",
+                    "interval": 5,
+                    "timeout": 16,
+                    "send": "GET / HTTP/1.0\\r\\nHost:vhost.example.com\\r\\n\\r\\n",
+                    "receive": "200 OK"
+                }
+            }
+        }
+    }
+}
+
+
+###
+
+POST https://10.250.15.109/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.18.0",
+        "id": "veconfig-nsgroup1",
+        "namespace_name": {
+            "class": "Tenant"
+        }
+    }
+}
+
+
+###
+
+GET https://10.250.15.180/mgmt/tm/sys/application/service
+Authorization: Basic admin:P@ssw0rd123
+
+###
+
+PATCH https://10.250.15.180/mgmt/tm/sys/application/service/~kubernetes~kubernetes_f5-test-cm-s1.app~kubernetes_f5-test-cm-s1
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "strictUpdates": "disabled"
+}
+
+
+### cm-as3-canary-template
+POST https://10.250.15.180/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.19.0",
+        "id": "cebbank-configmap-k8s-ceb001",
+        "remark": "HTTP application",
+        "k8s-ceb001": {
+            "class": "Tenant",
+            "k8s-ceb001-svc-1-app": {
+                "class": "Application",
+                "template": "generic",
+                "k8s-ceb001-svc-1-vs-80": {
+                    "maxConnections": 123,
+                    "nat64Enabled": false, 
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "192.168.5.91"
+                    ],
+                    "virtualPort": 80,
+                    "profileHTTP": {
+                        "use": "http_X-Forwarded-For"
+                    },
+                    "persistenceMethods": [
+                        {
+                            "use": "cookie_encryption"
+                        }
+                    ],
+                    "iRules": [
+                        "irule_k8s-ceb001-svc-1"
+                    ],
+                    "pool": "k8s-ceb001-svc-1-pool-8080"
+                },
+                "irule_k8s-ceb001-svc-1": {
+                    "class": "iRule",
+                    "remark": "switch between pools",
+                    "iRule": "when HTTP_REQUEST {\n if { [HTTP::uri] starts_with \"/coffee\" } {\n pool /k8s-ceb001/k8s-ceb001-svc-1-app/k8s-ceb001-svc-1-pool-8080 \n } else { \n pool /k8s-ceb001/k8s-ceb001-svc-1-app/k8s-ceb001-app-svc-4-pool-8080 \n } \n}"
+                },
+                "cookie_encryption": {
+                    "class": "Persist",
+                    "persistenceMethod": "cookie",
+                    "encrypt": true,
+                    "cookieMethod": "insert",
+                    "passphrase": {
+                        "ciphertext": "a3RjeGZ5Z2Q=",
+                        "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0="
+                    }
+                },
+                "http_X-Forwarded-For": {
+                    "class": "HTTP_Profile",
+                    "xForwardedFor": true
+                },
+                "k8s-ceb001-svc-1-http-8080": {
+                    "class": "Monitor",
+                    "monitorType": "http",
+                    "send": "GET /coffee/ HTTP/1.1\r\nHost:f5.monitor.com\r\n\r\n",
+                    "interval": 5,
+                    "timeout": 16,
+                    "receive": "coffee"
+                },
+                "k8s-ceb001-app-svc-4-pool-8080": {
+                    "class": "Pool",
+                    "monitors": [
+                        "tcp"
+                    ],
+                    "minimumMembersActive": 0,
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                },
+                "k8s-ceb001-svc-1-pool-8080": {
+                    "class": "Pool",
+                    "monitors": [
+                        {
+                            "use": "k8s-ceb001-svc-1-http-8080"
+                        }
+                    ],
+                    "loadBalancingMode": "least-connections-member",
+                    "minimumMembersActive": 0,
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
+
+
+### cm-as3-http-template-hsts
+
+POST https://10.250.15.180/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.19.0",
+        "id": "cebbank-configmap-k8s-ceb001",
+        "remark": "HTTP application",
+        "k8s-ceb001": {
+            "class": "Tenant",
+            "k8s-ceb001-svc-1-app": {
+                "class": "Application",
+                "template": "generic",
+                "k8s-ceb001-svc-1-vs-80": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "172.16.142.113"
+                    ],
+                    "virtualPort": 80,
+                    "snat": "auto",
+                    "profileHTTP": {
+                        "use": "http_X-Forwarded-For"
+                    },
+                    "persistenceMethods": [
+                        {
+                            "use": "cookie_encryption"
+                        }
+                    ],
+                    "profileMultiplex": {
+                        "use": "oneconnectprofile"
+                    },
+                    "iRules": [
+                        "irules_test"
+                    ],
+                    "pool": "k8s-ceb001-svc-1-pool-8080"
+                },
+                "cookie_encryption": {
+                    "class": "Persist",
+                    "persistenceMethod": "cookie",
+                    "encrypt": true,
+                    "cookieMethod": "insert",
+                    "passphrase": {
+                        "ciphertext": "a3RjeGZ5Z2Q=",
+                        "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0="
+                    }
+                },
+                "oneconnectprofile": {
+                    "class": "Multiplex_Profile",
+                    "sourceMask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
+                },
+                "http_X-Forwarded-For": {
+                    "class": "HTTP_Profile",
+                    "xForwardedFor": true,
+                    "insertHeader": {
+                        "name": "X-Forwarded-Proto",
+                        "value": "https"
+                    }
+                },
+                "irules_test": {
+                    "class": "iRule",
+                    "iRule": {
+                        "base64": "d2hlbiBIVFRQX1JFUVVFU1QgewogIEhUVFA6OmhlYWRlciBpbnNlcnQgWC1SZWFsLUlQIFtJUDo6cmVtb3RlX2FkZHJdCiAgIGlmIHsgW0hUVFA6Omhvc3RdIGVxdWFscyAiaGFyYm9yLWRldm9wcy11YXQuc2FueS5jb20uY24iIH0gewogICAgICBpZiAgeyBbSFRUUDo6dXJpXSBzdGFydHNfd2l0aCAiL2FwaSIgfSB7CiAgICAgICBwb29sIHBvb2wtdG8tcmVkaXJlY3QKICAgICAgfQogICAgICBlbHNlaWYgeyBbSFRUUDo6dXJpXSBzdGFydHNfd2l0aCAiL3NlcnZpY2UiIH0gewogICAgICAgcG9vbCBwb29sLXRvLXJlZGlyZWN0CiAgICAgIH0KICAgICAgZWxzZWlmIHsgW0hUVFA6OnVyaV0gc3RhcnRzX3dpdGggIi92MiIgfSB7CiAgICAgICBwb29sIHBvb2wtdG8tcmVkaXJlY3QKICAgICAgfQogICAgICBlbHNlaWYgeyBbSFRUUDo6dXJpXSBzdGFydHNfd2l0aCAiL2NoYXJ0cmVwbyIgfSB7CiAgICAgICBwb29sIHBvb2wtdG8tcmVkaXJlY3QKICAgICAgfQogICAgICBlbHNlaWYgeyBbSFRUUDo6dXJpXSBzdGFydHNfd2l0aCAiL2MiIH0gewogICAgICAgcG9vbCBwb29sLXRvLXJlZGlyZWN0CiAgICAgIH0gZWxzZSB7CiAgICAgIHBvb2wgcG9vbC10by1yZWRpcmVjdCAKICAgICB9CiAgIH0KIH0K"
+                    }
+                },
+                "k8s-ceb001-svc-1-http-8080": {
+                    "class": "Monitor",
+                    "monitorType": "http",
+                    "send": "GET /coffee/ HTTP/1.1\r\nHost:f5.monitor.com\r\n\r\n",
+                    "interval": 5,
+                    "timeout": 16,
+                    "receive": "coffee"
+                },
+                "k8s-ceb001-svc-1-pool-8080": {
+                    "class": "Pool",
+                    "monitors": [
+                        {
+                            "use": "k8s-ceb001-svc-1-http-8080"
+                        }
+                    ],
+                    "loadBalancingMode": "least-connections-member",
+                    "minimumMembersActive": 0,
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
+
+### cm-as3-http-template-sa-snat
+
+POST https://10.250.15.180/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.29.0",
+        "id": "123abcd",
+        "label": "f5_test003",
+        "remark": "HTTP application",
+        "f5_test003": {
+            "class": "Tenant",
+            "f5_test003": {
+                "class": "Application",
+                "template": "generic",
+                "app_svc_vip": {
+                    "class": "Service_Address",
+                    "virtualAddress": "172.16.142.112",
+                    "arpEnabled": true
+                },
+                "app_svc_vs_demo": {
+                    "class": "Service_HTTP",
+                    "persistenceMethods": [
+                        "cookie"
+                    ],
+                    "virtualAddresses": [
+                        {
+                            "use": "app_svc_vip"
+                        }
+                    ],
+                    "virtualPort": 83,
+                    "iRules": [
+                        "iRulesTest"
+                    ],
+                    "profileTCP": {
+                        "use": "customTCPProfile"
+                    },
+                    "profileHTTP": {
+                        "use": "customHTTPProfile"
+                    },
+                    "snat": {
+                        "use": "snatpool-111"
+                    },
+                    "pool": "app_svc_pool3"
+                },
+                "iRulesTest": {
+                    "class": "iRule",
+                    "remark": "snatpool",
+                    "iRule": "when CLIENT_ACCEPTED {\n snatpool snatpool-111 \n }"
+                },
+                "customTCPProfile": {
+                    "class": "TCP_Profile",
+                    "idleTimeout": 600 
+                },
+                "customHTTPProfile": {
+                    "class": "HTTP_Profile",
+                    "xForwardedFor": true
+                },
+                "snatpool-111": {
+                    "class": "SNAT_Pool",
+                    "snatAddresses": [
+                        "172.16.142.221",
+                        "172.16.142.222"
+                    ]
+                },
+                "monitorTcp": {
+                    "class": "Monitor",
+                    "monitorType": "tcp",
+                    "timeout": 10,
+                    "interval": 2,
+                    "send": "",
+                    "receive": ""
+                },
+                "app_svc_pool3": {
+                    "class": "Pool",
+                    "monitors": [
+                        {
+                            "use": "monitorTcp"
+                        }
+                    ],
+                    "loadBalancingMode": "least-connections-member",
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
+
+### cm-as3-https-template
+
+
+POST https://10.250.15.180/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "updateMode": "selective",
+        "schemaVersion": "3.25.0",
+        "id": "irule-demo2",
+        "label": "harbor-https",
+        "test": {
+            "class": "Tenant",
+            "harbor-https": {
+                "class": "Application",
+                "template": "generic",
+                "vs_harbor_443": {
+                    "class": "Service_HTTPS", 
+                    "virtualAddresses": [
+                        "172.25.53.81"
+                    ],
+                    "virtualPort": 443,
+                    "serverTLS": [ 
+                        {
+                            "bigip": "/Common/clientssl"
+                        }
+                    ],
+                    "profileHTTP": {
+                        "use": "http-harbor"
+                    },
+                    "profileMultiplex": {
+                        "bigip": "/Common/oneconnect"
+                    },
+                    "iRules": [
+                        "irules_harbor_443"
+                    ]
+                },
+                "irules_harbor_443": {
+                    "class": "iRule",
+                    "iRule": {
+                        "base64": "d2hlbiBIVFRQX1JFUVVFU1Qgew0KICBIVFRQOjpoZWFkZXIgaW5zZXJ0IFgtUmVhbC1JUCBbSVA6OnJlbW90ZV9hZGRyXQ0KICAgaWYgeyBbSFRUUDo6aG9zdF0gZXF1YWxzICJoYXJib3ItZGV2b3BzLXVhdC5zYW55LmNvbS5jbiIgfSB7DQogICAgICBpZiAgeyBbSFRUUDo6dXJpXSBzdGFydHNfd2l0aCAiL2FwaSIgfSB7IA0KICAgICAgIHBvb2wgcG9vbF9oYXJib3JfY29yZQ0KICAgICAgfQ0KICAgICAgZWxzZWlmIHsgW0hUVFA6OnVyaV0gc3RhcnRzX3dpdGggIi9zZXJ2aWNlIiB9IHsgDQogICAgICAgcG9vbCBwb29sX2hhcmJvcl9jb3JlDQogICAgICB9DQogICAgICBlbHNlaWYgeyBbSFRUUDo6dXJpXSBzdGFydHNfd2l0aCAiL3YyIiB9IHsgDQogICAgICAgcG9vbCBwb29sX2hhcmJvcl9jb3JlDQogICAgICB9DQogICAgICBlbHNlaWYgeyBbSFRUUDo6dXJpXSBzdGFydHNfd2l0aCAiL2NoYXJ0cmVwbyIgfSB7IA0KICAgICAgIHBvb2wgcG9vbF9oYXJib3JfY29yZQ0KICAgICAgfQ0KICAgICAgZWxzZWlmIHsgW0hUVFA6OnVyaV0gc3RhcnRzX3dpdGggIi9jIiB9IHsgDQogICAgICAgcG9vbCBwb29sX2hhcmJvcl9jb3JlDQogICAgICB9IGVsc2Ugew0KICAgICAgcG9vbCBwb29sX2hhcmJvcl9wb3J0YWwgDQogICAgIH0NCiAgIH0NCiB9"
+                    }
+                },
+                "http-harbor": {
+                    "class": "HTTP_Profile",
+                    "xForwardedFor": true,
+                    "insertHeader": {
+                        "name": "X-Forwarded-Proto",
+                        "value": "https"
+                    }
+                },
+                "pool_harbor_portal": {
+                    "class": "Pool",
+                    "loadBalancingMode": "least-connections-member",
+                    "monitors": [
+                        "http"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                },
+                "pool_harbor_core": {
+                    "class": "Pool",
+                    "loadBalancingMode": "least-connections-member",
+                    "monitors": [
+                        "http"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
+
+
+### cm-as3-L4-template
+
+
+POST https://10.250.15.180/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.19.0",
+        "id": "cebbank-configmap-k8s-ceb001",
+        "remark": "TCP application",
+        "k8s-ceb001": {
+            "class": "Tenant",
+            "k8s-ceb001-svc-1-app": {
+                "class": "Application",
+                "template": "generic",
+                "k8s-ceb001-svc-1-vs-80": {
+                    "class": "Service_L4",
+                    "virtualAddresses": [
+                        "192.168.5.90"
+                    ],
+                    "virtualPort": 0,
+                    "layer4": "any",
+                    "persistenceMethods": [],
+                    "profileL4": {
+                        "bigip": "/Common/fastL4"
+                    },
+                    "pool": "k8s-ceb001-svc-1-pool-8080"
+                },
+                "k8s-ceb001-svc-1-pool-8080": {
+                    "class": "Pool",
+                    "monitors": [
+                        "icmp"
+                    ],
+                    "loadBalancingMode": "least-connections-member",
+                    "minimumMembersActive": 0,
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
+
+### cm-as3-tcp-std-template
+
+
+POST https://10.250.15.180/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.16.0",
+        "label": "snat_pool_existing",
+        "remark": "reference_snat_pool",
+        "Sample_SNAT_Pool": {
+            "class": "Tenant",
+            "SNAT_app": {
+                "class": "Application",
+                "test_service": {
+                    "class": "Service_TCP",
+                    "virtualPort": 8181,
+                    "virtualAddresses": [
+                        "192.0.2.100"
+                    ],
+                    "profileTCP": {
+                        "use": "customTCPProfile"
+                    },
+                    "pool": "tcp_pool",
+                    "snat": {
+                        "use": "CreateSnatPool"
+                    }
+                },
+                "customTCPProfile": {
+                    "class": "TCP_Profile",
+                    "idleTimeout": 600
+                },
+                "tcp_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "tcp"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                },
+                "CreateSnatPool": {
+                    "class": "SNAT_Pool",
+                    "snatAddresses": [
+                        "192.0.96.10",
+                        "192.0.96.11"
+                    ]
+                }
+            }
+        }
+    }
+}
+
+### cm-as3-udp-std-template
+
+
+POST https://10.250.15.180/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.16.0",
+        "label": "udp-std-vs",
+        "remark": "reference_snat_pool",
+        "Sample_SNAT_Pool": {
+            "class": "Tenant",
+            "SNAT_app": {
+                "class": "Application",
+                "test_service": {
+                    "class": "Service_UDP",
+                    "virtualPort": 53,
+                    "virtualAddresses": [
+                        "192.0.2.100"
+                    ],
+                    "profileUDP": {
+                        "use": "customUDPProfile"
+                    },
+                    "pool": "udp_pool",
+                    "snat": {
+                        "use": "CreateSnatPool"
+                    }
+                },
+                "customUDPProfile": {
+                    "class": "UDP_Profile",
+                    "idleTimeout": 10
+                },
+                "udp_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "icmp"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": ["1.1.1.1"]
+                        }
+                    ]
+                },
+                "CreateSnatPool": {
+                    "class": "SNAT_Pool",
+                    "snatAddresses": [
+                        "192.0.96.10",
+                        "192.0.96.11"
+                    ]
+                }
+            }
+        }
+    }
+}
+
+
+### standard-http
+POST https://10.250.15.180/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.18.0",
+        "id": "veconfig-nsgroup1",
+        "namespace_name": {
+            "class": "Tenant",
+            "service_name_app": {
+                "class": "Application",
+                "template": "generic",
+                "service_name_vs": {
+                    "class": "Service_HTTP",
+                    "persistenceMethods": [
+                        "cookie"
+                    ],
+                    "virtualAddresses": [
+                        "197.14.222.12"
+                    ],
+                    "virtualPort": 80,
+                    "profileMultiplex": {
+                        "use": "service_name_oneconnectprofile"
+                    },
+                    "profileHTTP": {
+                        "use": "service_name_httpprofile"
+                    },
+                    "snat": "self",
+                    "pool": "service_name_pool"
+                },
+                "service_name_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        {
+                            "use": "service_name_monitor"
+                        }
+                    ],
+                    "loadBalancingMode": "least-connections-member",
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                },
+                "service_name_httpprofile": {
+                    "class": "HTTP_Profile",
+                    "xForwardedFor": true
+                },
+                "service_name_oneconnectprofile": {
+                    "class": "Multiplex_Profile",
+                    "sourceMask": "255.255.255.255",
+                    "maxConnectionReuse": 5
+                },
+                "service_name_monitor": {
+                    "class": "Monitor",
+                    "monitorType": "http",
+                    "interval": 5,
+                    "timeout": 16,
+                    "send": "GET / HTTP/1.0\\r\\nHost:vhost.example.com\\r\\n\\r\\n",
+                    "receive": "200 OK"
+                }
+            }
+        }
+    }
+}
+
+
+### cm-as3-https-template-clientssl
+POST https://10.250.15.180/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.0.0",
+        "id": "123abc",
+        "label": "Sample 2",
+        "remark": "HTTPS with predictive-node pool",
+        "Sample_02": {
+            "class": "Tenant",
+            "A1": {
+                "class": "Application",
+                "service": {
+                    "class": "Service_HTTPS",
+                    "virtualAddresses": [
+                        "192.0.2.11"
+                    ],
+                    "pool": "web_pool",
+                    "serverTLS": "webtls"
+                },
+                "web_pool": {
+                    "class": "Pool",
+                    "loadBalancingMode": "predictive-node",
+                    "monitors": [
+                        "http"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": [
+                                "192.0.2.12",
+                                "192.0.2.13"
+                            ]
+                        }
+                    ]
+                },
+                "webtls": {
+                    "class": "TLS_Server",
+                    "certificates": [
+                        {
+                            "certificate": "webcert"
+                        }
+                    ]
+                },
+                "webcert": {
+                    "class": "Certificate",
+                    "remark": "in practice we recommend using a passphrase",
+                    "certificate": "-----BEGIN CERTIFICATE-----\nMIICnDCCAgWgAwIBAgIJAJ5n2b0OCEjwMA0GCSqGSIb3DQEBCwUAMGcxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApXYXNoaW5ndG9uMRAwDgYDVQQHDAdTZWF0dGxlMRQwEgYDVQQKDAtmNV9OZXR3b3JrczEbMBkGA1UEAwwSc2FtcGxlLmV4YW1wbGUubmV0MB4XDTE3MTEyNjE5NTAyNFoXDTE4MDIyNTE5NTAyNFowZzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCldhc2hpbmd0b24xEDAOBgNVBAcMB1NlYXR0bGUxFDASBgNVBAoMC2Y1X05ldHdvcmtzMRswGQYDVQQDDBJzYW1wbGUuZXhhbXBsZS5uZXQwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALEsuXmSXVQpYjrZPW+WiTBjn491mwZYT7Q92V1HlSBtM6WdWlK1aZN5sovfKtOX7Yrm8xa+e4o/zJ2QYLyyv5O+t2EGN/4qUEjEAPY9mwJdfzRQy6Hyzm84J0QkTuUJ/EjNuPji3D0QJRALUTzu1UqqDCEtiN9OGyXEkh7uvb7BAgMBAAGjUDBOMB0GA1UdDgQWBBSVHPNrGWrjWyZvckQxFYWO59FRFjAfBgNVHSMEGDAWgBSVHPNrGWrjWyZvckQxFYWO59FRFjAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4GBAJeJ9SEckEwPhkXOm+IuqfbUS/RcziifBCTmVyE+Fa/j9pKSYTgiEBNdbJeBEa+gPMlQtbV7Y2dy8TKx/8axVBHiXC5geDML7caxOrAyHYBpnx690xJTh5OIORBBM/a/NvaR+P3CoVebr/NPRh9oRNxnntnqvqD7SW0U3ZPe3tJc\n-----END CERTIFICATE-----",
+                    "privateKey": "-----BEGIN RSA PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-256-CBC,D8FFCE6B255601587CB54EC29B737D31\n\nkv4Fc3Jn0Ujkj0yRjt+gQQfBLSNF2aRLUENXnlr7Xpzqu0Ahr3jS1bAAnd8IWnsR\nyILqVmKsYF2DoHh0tWiEAQ7/y/fe5DTFhK7N4Wml6kp2yVMkP6KC4ssyYPw27kjK\nDBwBZ5O8Ioej08A5sgsLCmglbmtSPHJUn14pQnMTmLOpEtOsu6S+2ibPgSNpdg0b\nCAJNG/KHe+Vkx59qNDyDeKb7FZOlsX30+y67zUq9GQqJEDuysPJ2BUNP0IJXAjst\nFIt1qNoZew+5KDYs7u/lPxcMGTirUhgI84Jy4WcDvSOsP/tKlxj04TbIE3epmSKy\n+TihHkwY7ngIGtcm3Sfqk5jz2RXoj1/Ac3SW8kVTYaOUogBhn7zAq4Wju6Et4hQG\nRGapsJp1aCeZ/a4RCDTxspcKoMaRa97/URQb0hBRGx3DGUhzpmX9zl7JI2Xa5D3R\nmdBXtjLKYJTdIMdd27prBEKhMUpae2rz5Mw4J907wZeBq/wu+zp8LAnecfTe2nGY\nE32x1U7gSEdYOGqnwxsOexb1jKgCa67Nw9TmcMPV8zmH7R9qdvgxAbAtwBl1F9OS\nfcGaC7epf1AjJLtaX7krWmzgASHl28Ynh9lmGMdv+5QYMZvKG0LOg/n3m8uJ6sKy\nIzzvaJswwn0j5P5+czyoV5CvvdCfKnNb+3jUEN8I0PPwjBGKr4B1ojwhogTM248V\nHR69D6TxFVMfGpyJhCPkbGEGbpEpcffpgKuC/mEtMqyDQXJNaV5HO6HgAJ9F1P6v\n5ehHHTMRvzCCFiwndHdlMXUjqSNjww6me6dr6LiAPbejdzhL2vWx1YqebOcwQx3G\n-----END RSA PRIVATE KEY-----",
+                    "passphrase": {
+                        "ciphertext": "ZjVmNQ==",
+                        "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0"
+                    }
+                }
+            }
+        }
+    }
+}
+
+### http-cm-as3-template-sa-snat delete
+
+POST https://10.250.15.180/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.28.0",
+        "id": "123abcd",
+        "label": "f5_test003",
+        "remark": "HTTP application",
+        "f5_test003": {
+            "class": "Tenant"
+        }
+    }
+}
+
+### more than 1 monitors inside
+
+POST https://10.250.15.180/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.28.0",
+        "id": "123abcd",
+        "label": "f5_test003",
+        "remark": "HTTP application",
+        "f5_test003": {
+            "class": "Tenant",
+            "folderx": {
+                "class": "Application",
+                "tcp_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "tcp",
+                        "icmp"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": ["1.2.3.4"]
+                        }
+                    ]
+                },
+                "my_monitor_x": {
+                    "class": "Monitor",
+                    "monitorType": "http",
+                    "interval": 5,
+                    "timeout": 16,
+                    "send": "GET / HTTP/1.0\\r\\nHost:vhost.example.com\\r\\n\\r\\n",
+                    "receive": "200 OK"
+                }
+            }
+        }
+    }
+}
+
+
+
+### test business continuity
+POST https://10.250.15.180/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.19.0",
+        "id": "cebbank-configmap-k8s-ceb001",
+        "remark": "HTTP application",
+        "k8s-ceb001": {
+            "class": "Tenant",
+            "myapp": {
+                "class": "Application",
+                "template": "generic",
+                "file-server": {
+                    "maxConnections": 123,
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "10.250.16.202"
+                    ],
+                    "virtualPort": 80,
+                    "pool": "nginx-file-server"
+                },
+                "nginx-file-server": {
+                    "class": "Pool",
+                    "monitors": [
+                        "tcp"
+                    ],
+                    "minimumMembersActive": 0,
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": [
+                                "10.250.11.185"
+                            ]
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
+
+
+### test business continuity
+POST https://10.250.18.105:8443/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+  "class": "ADC",
+  "schemaVersion": "3.2.0",
+  "id": "ltm_policy",
+  "label": "",
+  "remark": "Simple HTTP application with LTM policy",
+  "Sample_http_08": {
+    "class": "Tenant",
+    "A1": {
+      "class": "Application",
+      "service": {
+        "class": "Service_HTTP",
+        "virtualAddresses": [
+          "10.0.1.10"
+        ],
+        "policyEndpoint": "forward_policy"
+      },
+      "web_pool": {
+        "class": "Pool",
+        "monitors": [
+          "http"
+        ],
+        "members": [{
+          "servicePort": 80,
+          "serverAddresses": [
+            "192.0.2.10",
+            "192.0.2.11"
+          ]
+        }]
+      },
+      "forward_policy": {
+        "class": "Endpoint_Policy",
+        "rules": [{
+          "name": "forward_to_pool",
+          "conditions": [{
+            "type": "httpUri",
+            "path": {
+              "operand": "contains",
+              "values": ["example.com"]
+            }
+          }],
+          "actions": [{
+            "type": "forward",
+            "event": "request",
+            "select": {
+              "pool": {
+                "use": "web_pool"
+              }
+            }
+          }]
+        }]
+      }
+    }
+  }
+}
+
+
+### post irules
+POST https://10.250.18.105:8443/mgmt/shared/appsvcs/declare?show=full&controls.logLevel=debug
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.18.0",
+        "id": "cm-test001",
+        "cistest18": {
+            "class": "Tenant",
+            "app-1": {
+                "class": "Application",
+                "template": "generic",
+                "app_svc_vs": {
+                    "class": "Service_HTTP",
+                    "iRules": [
+                        "test001_app-v1-svc_irules"
+                    ],
+                    "virtualAddresses": [
+                        "10.42.20.121"
+                    ],
+                    "snat": "self",
+                    "virtualPort": 80
+                },
+                "app_1_svc_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "tcp"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 8080,
+                            "serverAddresses": []
+                        }
+                    ]
+                },
+                "test001_app-v1-svc_irules": {
+                    "class": "iRule",
+                    "iRule": "when CLIENT_ACCEPTED { if {[expr {[expr {0xffffffff & [crc32 [IP::client_addr]]}] % 100}] < 25} { pool /Common/a  } else {  pool /Common/b }}"
+                }
+            },
+            "app-2": {
+                "class": "Application",
+                "template": "generic",
+                "app_2_svc_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "tcp"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
+
+
+#### as3 sni test
+
+POST https://10.250.18.105:8443/mgmt/shared/appsvcs/declare
+Authorization: Basic admin:P@ssw0rd123
+Content-Type: application/json
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.27.0",
+        "remark": "One https vs with multiple SSL cert",
+        "cis-c-6": {
+            "class": "Tenant",
+            "cafe": {
+                "class": "Application",
+                "https_vs": {
+                    "class": "Service_HTTPS",
+                    "virtualAddresses": [
+                        "192.0.2.111"
+                    ],
+                    "virtualPort": 443,
+                    "pool": "coffee_pool",
+                    "serverTLS": "cafetls",
+                    "clientTLS": [
+                        {
+                            "bigip": "/Common/serverssl"
+                        }
+                    ],
+                    "redirect80": false
+                },
+                "coffee_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "http"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                },
+                "cafetls": {
+                    "class": "TLS_Server",
+                    "certificates": [
+                        {
+                            "matchToSNI": "coffee.example.com",
+                            "certificate": "coffeecert"
+                        },
+                        {
+                            "matchToSNI": "tea.example.com",
+                            "certificate": "teacert"
+                        }
+                    ]
+                },
+                "coffeecert": {
+                    "class": "Certificate",
+                    "remark": "coffee.example.com",
+                    "certificate": "-----BEGIN CERTIFICATE-----\nMIIDPDCCAiSgAwIBAgIEF6x2/TANBgkqhkiG9w0BAQsFADBgMQswCQYDVQQGEwJD\nTjELMAkGA1UECBMCWkoxCzAJBgNVBAcTAkhaMQswCQYDVQQKEwJGNTENMAsGA1UE\nCxMEVGVzdDEbMBkGA1UEAxMSY29mZmVlLmV4YW1wbGUuY29tMB4XDTIyMDgwMzA3\nMjM0MVoXDTMyMDczMTA3MjM0MVowYDELMAkGA1UEBhMCQ04xCzAJBgNVBAgTAlpK\nMQswCQYDVQQHEwJIWjELMAkGA1UEChMCRjUxDTALBgNVBAsTBFRlc3QxGzAZBgNV\nBAMTEmNvZmZlZS5leGFtcGxlLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCC\nAQoCggEBAOg2bcgZP1hCWIGnWikq8hivZq130nfXsyDijf0VpkvfHDmVdfEIyz9k\nhRVVgCTtw5jllGsGZ4O+0jEx+bGGwAUgztH/318IW+EUFd928jaUwgYiWqSwbtgk\nHjEUH30U9bXz1nvFISOjU33imbJsDq4Rjvq3/YxelMeRFw0xgMAWiyEFnbVU41cQ\nFP6+PqZbJ1/wZ4nhTWnJGmYvEmtQ2Fh27JGQjkqrKp22PV8c8tds8+CyCbi/6zOR\nJExj2zQ/zuOIVgm26z75OSsuRf+W7dFA0Li6zUdk7y1iw3Y/yI4I+htfORTum8SM\nzG99ssbuE2lNQJ2Zh4tVz9bHwOU2+p8CAwEAATANBgkqhkiG9w0BAQsFAAOCAQEA\nQrzflgFiNs1pA4ou/1+q2o59/cw6ga5MXWbjVDCh34w9okpzNnEmPlBlvLiLykSV\n5H7u6pnNP1EUPdDe+Cleg0E2Om0pIwuvmBc8YT8AADfE+znGb/OUEQOZ4pGSbxeQ\nZX5/H5Ie4UszfcEPfNnBerMRX6OBy39RjIQBTvioSMCu4agfzY8eubQfDwBpRb/o\n+hOh2IB/fnr7zxbs7qSBiTktXsspfa3nezrdNQ+iXdTRPrBit+2j67CrvKpBoRKe\nauY+7woPVDVJYjeAmy5Ly8zZUoGDlpRwKEtTu48108Cg3bISLhqycX18ZpZ2BA1N\nu+QU1Yn3RaGFSU/8DCJxtQ==\n-----END CERTIFICATE-----",
+                    "privateKey": "-----BEGIN PRIVATE KEY-----\nMIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgEAAoIBAQDoNm3IGT9YQliB\np1opKvIYr2atd9J317Mg4o39FaZL3xw5lXXxCMs/ZIUVVYAk7cOY5ZRrBmeDvtIx\nMfmxhsAFIM7R/99fCFvhFBXfdvI2lMIGIlqksG7YJB4xFB99FPW189Z7xSEjo1N9\n4pmybA6uEY76t/2MXpTHkRcNMYDAFoshBZ21VONXEBT+vj6mWydf8GeJ4U1pyRpm\nLxJrUNhYduyRkI5Kqyqdtj1fHPLXbPPgsgm4v+szkSRMY9s0P87jiFYJtus++Tkr\nLkX/lu3RQNC4us1HZO8tYsN2P8iOCPobXzkU7pvEjMxvfbLG7hNpTUCdmYeLVc/W\nx8DlNvqfAgMBAAECggEASSUH7J1DTkZLwb9Yz5nm+26YrbCOG9DWbFfguOUuZjzH\nk73oEj4eY4ACyacOf9NjJtC+MP4p8h5T8EoZKFnVN2hPrWdnUXR9GIduol7Byf6O\npUcB/VlT+QJbfkMj7g8BnMhLed4s46BpRsBvgHu4Hg2K15/IHoSWYcxqke3Ta+20\nQo/cJxfgr5lHtae6XXBnp/Mu+vMuQZxFAz5TR6bWPjwRqyok8Mk1JK9we0nEJm8U\nml66N9i0UerhvIyFXUMww+846J/HnyrRvz0j5EnYmcquDw3DMMXzpssYCzamueny\nMgiD6VujfT6pQ/ClQQHZf3+naDPA6dz4zeVOwxvquQKBgQD8FNvObw4TI2ZRNlIW\nv6By4JWAIut25NI6r6+UXMYHbKxP7bI97P1SQMV+kGdVxiKJ366BM18WlzOIurJy\nFKtE6QaggEZYN/duotA+jt3MygyXg2gu2wEpBzIwgxxRbR05pQLlsLtbSxKlpfZV\nk5trX0ZQ2eaUw0ITb43rsJ7VdwKBgQDr0oDeQv8FPCbsmgGeX0UWLP1aBeCJZNub\n15E5vXAy22fmsJTuAh7kvyyEHe4c/maug44VFEahn2H+6H2YGdzZTmGHzcxDpjSe\nIVQswxNCxpdgo/w5aR7M9Ewn5ollZotO0eIzj0MVaETW6UBqYX8oRgicpHC4KrKM\nGMabZJ1uGQKBgQCUZts4XpzUm4SCzw3ooouc1aZttyET74XsUr11BGD4wft3WqIS\nXtCLeeJKrkyHbIusy2h6W3nhXMZT+kVPb+ecO+tQ1fOTv+8EzQj3qzfcdh6PnCbb\nXscCFmBvuuAS97+6zfA0tKS4DCxAJMIugyV+QqqssntSnNjrhELyvBnl5QKBgQCk\nx+ioZiQQomGIfmyXH3cE8dbuaqDlIIabtNuTfx3BS7KkbcsDLJQtvq/6eXeC5vkV\nBHPpostf8CDnn8jy2U+KwMxBurn6o06tGBjbVkxFIsNwEeYSr7OH/0SftOVY53h8\nUQhAguCbOsqvaTlLnGjf2V/3JKhm597vKfjNaFbhMQKBgQCb7+WkDN9Pc3n1gbo3\nnZW7sTasIDj0MoZuMiM8J6R9EsD+hNJ/c5vpr4CeFaT4DTanhqLR6cCPR+Nqcl1T\neB4IKarz04svwizzFSG0XDCVmKO3nM4Zai0zkAIFSZxIXG9pxmucOmx8DPrvlX/c\nptO8AvBlmMvMiGlAMyDlKMUYSQ==\n-----END PRIVATE KEY-----"
+                },
+                "teacert": {
+                    "class": "Certificate",
+                    "remark": "tea.example.com",
+                    "certificate": "-----BEGIN CERTIFICATE-----\nMIIDNjCCAh6gAwIBAgIEF6yK6DANBgkqhkiG9w0BAQsFADBdMQswCQYDVQQGEwJD\nTjELMAkGA1UECBMCWkoxCzAJBgNVBAcTAkhaMQswCQYDVQQKEwJGNTENMAsGA1UE\nCxMEVGVzdDEYMBYGA1UEAxMPdGVhLmV4YW1wbGUuY29tMB4XDTIyMDgwMzA4NDg0\nMFoXDTMyMDczMTA4NDg0MFowXTELMAkGA1UEBhMCQ04xCzAJBgNVBAgTAlpKMQsw\nCQYDVQQHEwJIWjELMAkGA1UEChMCRjUxDTALBgNVBAsTBFRlc3QxGDAWBgNVBAMT\nD3RlYS5leGFtcGxlLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB\nAOxIFhA7yv1p4gzcbWR4x07f0zhKH8VfyWTRnw7QjZFUjNLbEa7bOhQt53V9oCSR\nol/8tY22CmBSAtlmTt5FX5H6W6naU8EAZUmwHO3eXjp/a1HUk0fj4D++dJ8KEF0b\nT2fxq4H+jYoTDE/Nr4u9TExuZfU/tcMsF3PrgIfkjydjW7peyJoxhvLt4tyk8z3a\nkfSgs6mjlBuc5/2Y1tIStRpJ7gl+eKueDHp4ogPnx5qcg+GAM1pYiv17wKVJzcHW\nDor0B4xVi3CQWlUlTwW1TX+pwL0JkoOOPfbNYo67G43DmG8m3WNG+FH+aIGXhyyp\ncy4zbum4d1HZI/zp+k7qd6ECAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAlfg7nBJL\nDQWDGjczOjZjOcHrM7jbfuadmZQAgmASGRLMaHNuj8RIG+Ro+znM6QYNB7S8E4ZF\ntjfvamSoFSB5+YoOwFZlyWyiHhW1L22HB7G2JabtBhexWURNfsjrwkROGpRBqjGz\neuq4x/kkRYkOGhWGyXmJQmPo2FjO2g4R1zIRGEMeij0xpPuYIZsA6BOuyYiJPvi0\nFBSsc+udZqOz9/MzcrU2mmIX0N42XudhWbiXNe6izPvBsrztJoZA8gaHn99JgZcZ\ngKLYKl6FW4aN5mh2XGwuS+smbD37vr4J3faZg+18KN+H6g8mbF/ArPxKP9fiM9u9\npKTWOTrCU0hJkw==\n-----END CERTIFICATE-----",
+                    "privateKey": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDsSBYQO8r9aeIM\n3G1keMdO39M4Sh/FX8lk0Z8O0I2RVIzS2xGu2zoULed1faAkkaJf/LWNtgpgUgLZ\nZk7eRV+R+lup2lPBAGVJsBzt3l46f2tR1JNH4+A/vnSfChBdG09n8auB/o2KEwxP\nza+LvUxMbmX1P7XDLBdz64CH5I8nY1u6XsiaMYby7eLcpPM92pH0oLOpo5QbnOf9\nmNbSErUaSe4Jfnirngx6eKID58eanIPhgDNaWIr9e8ClSc3B1g6K9AeMVYtwkFpV\nJU8FtU1/qcC9CZKDjj32zWKOuxuNw5hvJt1jRvhR/miBl4csqXMuM27puHdR2SP8\n6fpO6nehAgMBAAECggEAYScGw2gCgA5AXy9nX2917A2GKNf5lktbYLP8ZbgE7aPJ\nP43KCI6lo9R4HkwoQ8EJ9dPPxtP6Ej7GYyN4/FWkBT7e38kgtPP3scPTMU9EiWMI\n+p2gbWfaNfuWsioOLmpjTQcGkS3cftB0OIAHVTrhm2+tRpkKoJSJlCVaNQYagoPC\nzhns8KJceDnyRikRfH0RbPPGsLLohnRYPDEs6J0yCXvUhKxsFKXq/mL0licu9KZN\nqUwX2/TmT8iDnoC+TBkYJk055llBv16l5Hx7egYD9uNEFk76SInC2MCHpl1nlp43\nEp5uRUsaCjS+5tpqugQPelhFQC9v7l4t4x+3xH/XPQKBgQD7riYMLVCNnSH3zRH8\nYOwwFqGVSngTZw1hlTd06HEzUpntlHaoO3Z9pH2XWgaPF+2e2Hngm7EMNe5qjZau\nlyOqb85UCxuAs0wLlLD/Q4sWOGmEPrkIHmKXHMZjQMjtqCkKr//zvE0W9ADo2MLm\nawTxj45gTZxGXvuTEnMMkaflKwKBgQDwVkcXIJImgK+JXEjM1rGeypONVCnAqo7p\nFJq2/QAraGvlNLv1QBzE6s4uqwWfzCecICQOoNrLG0dE3mHIlYgVqOK5Li9CJcsB\n6dfEzgQyT4hotghCC/udjkAvKskXd4ShXbRSvF3p3elZDgXfAbQ5bxIL4QIOJF6f\nd5os2LqIYwKBgQC3thDzxogMNuy6kyhTzvPYzkw4S1mG4Cw2VNNcNOecjOjrMPnE\nJ1OAtvct6XrsLI04689bEoqT3TIg+SVKX+ya1m4HjuwOb9JMiccBLW5zU85Bx/8M\nXBGfOFPf00RXpe3/bSUp5wNmg8m+LatmwiujoCRPS5eNDnwYiNkODaw+bQKBgG5Z\nfvysdM5+6ZotKDP9I8LgCo2qph0TctisIDmCwvArWtb7to1t6Ye0tASTe9qaN1ml\nHEknLC5zkO6bGNSra7deOvOBtCswBR0UzIBNg3nCMMS7R+FjdR0rcmb1wy0mMFyT\nFLekS46U2I6ONL3nH2P7jpKrtnDd3CBmHwEWZdc3AoGBAM6ssZsvW47BGBbYNu7x\nwEE0ehL/lesNQK9qEvBbtQ3w8ta5M9QHNu0vg05A6Pv+fLhSA+RuutAnF+bqBMpA\nRM3JjvSRiMO51nISmVNl9Hga3vVvlUc7FDomv+KHc/RE6FqRdDRRvflErKb4sWDa\nV4BS1wQmnyROovJMDN0A/mVi\n-----END PRIVATE KEY-----"
+                }
+            }
+        }
+    }
+}
+
+#### as3 snat pool
+
+POST https://10.250.18.105:8443/mgmt/shared/appsvcs/declare
+Authorization: Basic admin:P@ssw0rd123
+Content-Type: application/json
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.19.0",
+        "id": "systest-automation-configmap",
+        "remark": "HTTP application",
+        "test-virtual-tenant": {
+            "class": "Tenant",
+            "myapp": {
+                "class": "Application",
+                "template": "generic",
+                "myvirtual": {
+                    "class": "Service_HTTP",
+                    "virtualAddresses": [
+                        "10.123.234.11"
+                    ],
+                    "virtualPort": 81,
+                    "snat": {
+                        "use": "mysnatpool"
+                    }
+                },
+                "mysnatpool": {
+                    "class": "SNAT_Pool",
+                    "snatAddresses": [
+                        "172.16.142.221",
+                        "172.16.142.222"
+                    ]
+                }
+            }
+        }
+    }
+}
+
+
+#### as3 ca
+
+POST https://10.250.18.105:8443/mgmt/shared/appsvcs/declare
+Authorization: Basic admin:P@ssw0rd123
+Content-Type: application/json
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.27.0",
+        "remark": "HTTPS with bidirection auth",
+        "cis-c-6": {
+            "class": "Tenant",
+            "cafe": {
+                "class": "Application",
+                "https_vs": {
+                    "class": "Service_HTTPS",
+                    "virtualAddresses": [
+                        "192.0.2.11"
+                    ],
+                    "virtualPort": 443,
+                    "pool": "coffee_pool",
+                    "serverTLS": "coffeetls1",
+                    "redirect80": false
+                },
+                "coffee_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "http"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                },
+                "coffeetls1": {
+                    "class": "TLS_Server",
+                    "certificates": [
+                        {
+                            "certificate": "coffeecert"
+                        }
+                    ],
+                    "authenticationMode": "require",
+                    "authenticationFrequency": "every-time",
+                    "authenticationTrustCA": "coffeeca"
+                },
+
+                "coffeetls2": {
+                    "class": "TLS_Server",
+                    "certificates": [
+                        {
+                            "certificate": "coffeecert"
+                        }
+                    ],
+                    "authenticationMode": "require",
+                    "authenticationFrequency": "every-time",
+                    "authenticationTrustCA": "testcabundle"
+                },
+                "coffeecert": {
+                    "class": "Certificate",
+                    "remark": "coffee.example.com",
+                    "certificate": {
+                        "bigip": "/Common/default.crt"
+                    },
+                    "privateKey": {
+                        "bigip": "/Common/default.key"
+                    }
+                },
+                "coffeeca": {
+                    "class": "CA_Bundle",
+                    "bundle": {
+                        "bigip": "/Common/ca-bundle.crt"
+                    }
+                },
+                "testcabundle": {
+                    "class": "CA_Bundle",
+                    "bundle": "-----BEGIN CERTIFICATE-----\nMIIF+jCCA+KgAwIBAgIQAdFs++0ey5zfaqIxz4xU+TANBgkqhkiG9w0BAQwFADCB\niDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCk5ldyBKZXJzZXkxFDASBgNVBAcTC0pl\ncnNleSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5ldHdvcmsxLjAsBgNV\nBAMTJVVTRVJUcnVzdCBSU0EgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkwHhcNMTUw\nMzExMDAwMDAwWhcNMjUwMzEwMjM1OTU5WjBwMQswCQYDVQQGEwJDTjERMA8GA1UE\nCBMIU2hhbmdoYWkxJTAjBgNVBAoTHFRydXN0QXNpYSBUZWNobm9sb2dpZXMsIElu\nYy4xJzAlBgNVBAMTHlRydXN0QXNpYSBSU0EgRFYgU1NMIFNlcnZlciBDQTCCASIw\nDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKVXxe36oseRAbs4z+/mLAWrYUom\nQDA0DwiDfYyqf8nrTG/wxELxtboEGBF4U5NbEye/i5t9in+mdbzdwpN657myfypS\nl2sC2YyY7ArmRxgTFyrtxhdzBLVnJEly2EAxk06QBwzcEfMJ5dWKpqcDY85K4N/C\nhO4E2BjzZRG7F3kZlo0T2oDbymNUt3J//cFwSiKl4LuSIUmvkUexbEG+75kvMZ5U\n5P3/C/becM61izwn+ftHFS7j9Rn7Hut4yqn+ePUOcBFZ6U02lcRDAPElq3SzyOvW\nmJxUTRiYHrnSK4qFHCBnNmfSlQvKUAo30Az4UiDcro+9YWtriR90DKbZrFECAwEA\nAaOCAXUwggFxMB8GA1UdIwQYMBaAFFN5v1qqK0rPVIDh2JvAnfKyA2bLMB0GA1Ud\nDgQWBBR7FhLOvGeCvXj0NqvcT2sXSgXtpTAOBgNVHQ8BAf8EBAMCAYYwEgYDVR0T\nAQH/BAgwBgEB/wIBADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwIgYD\nVR0gBBswGTANBgsrBgEEAbIxAQICMTAIBgZngQwBAgEwUAYDVR0fBEkwRzBFoEOg\nQYY/aHR0cDovL2NybC51c2VydHJ1c3QuY29tL1VTRVJUcnVzdFJTQUNlcnRpZmlj\nYXRpb25BdXRob3JpdHkuY3JsMHYGCCsGAQUFBwEBBGowaDA/BggrBgEFBQcwAoYz\naHR0cDovL2NydC51c2VydHJ1c3QuY29tL1VTRVJUcnVzdFJTQUFkZFRydXN0Q0Eu\nY3J0MCUGCCsGAQUFBzABhhlodHRwOi8vb2NzcC51c2VydHJ1c3QuY29tMA0GCSqG\nSIb3DQEBDAUAA4ICAQAHygz5l1zWzcKT859aQgyDfUsiLyH+UKJ8jqSzOHb8A7Af\niK/K0HSZrg5tKiU90x2K/SpVuMmXlxNlxs7X1oDRvpgf8FHXZeVqm7fxuaFJ1fRi\nY73w9ClVhuvfYs2ziLyFt99nudgz9o/oroCe6gihR3LJW6jyS5LXcWE+uzv5CgLI\n6cHPjQdpgk8AcjqNBtqGiL7WgXRQMKHyb8jeBozKLi9M/VNW44WSaCs0JzXxBglL\n6fYOqOgF9lqrVVp257R3W4oqhbbHZ/2NY39hqs91YCBWhdVQvBYqM5b9N+v2+aEn\nRRYdyabdHUpMJ+5Jmbf9ydAcCix9eS8QMZbgal3vrwbJR6/MqOvuKcrBXe7j7ZxH\nWhL177r+e9SHzUcpCATDUJrL9fjCoBvWifiP9oPCVHkfpEYD9uu7sc+fBfFJP9V5\nmEQd0Vk5neWsNSq8cpfI7Ok4/R920+BD4an1Pkx9tly8P7Vza8aXSyv3OIplRYgr\n4Qf+6Cp2hVSSHL1Sv8D9TwvCqVvH7Zb1WwvuX4UHKo/Ae1cUiiEyavWGBo9o7bnV\ntyRdxTJmn6f6PeKe1u+HTCBoEuoVF22DJcbwTFiJ2U5voyb+OS6XXvIOIWOP+Imz\n3+WHDNM1GuNGDqz25zKCkl03MvK0Yw2FwT/HhSMSs1VmT5iCzaKXS7YgtGETKg==\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\nMIIG4DCCBMigAwIBAgIINJotoYIGsrMwDQYJKoZIhvcNAQELBQAwggEMMQswCQYD\nVQQGEwJFUzEPMA0GA1UECAwGTUFEUklEMQ8wDQYDVQQHDAZNQURSSUQxOjA4BgNV\nBAsMMXNlZSBjdXJyZW50IGFkZHJlc3MgYXQgd3d3LmNhbWVyZmlybWEuY29tL2Fk\nZHJlc3MxKTAnBgNVBAsMIENIQU1CRVJTIE9GIENPTU1FUkNFIFJPT1QgLSAyMDE2\nMRIwEAYDVQQFEwlBODI3NDMyODcxGDAWBgNVBGEMD1ZBVEVTLUE4Mjc0MzI4NzEb\nMBkGA1UECgwSQUMgQ0FNRVJGSVJNQSBTLkEuMSkwJwYDVQQDDCBDSEFNQkVSUyBP\nRiBDT01NRVJDRSBST09UIC0gMjAxNjAeFw0xNjA0MTQwNzM1NDhaFw00MDA0MDgw\nNzM1NDhaMIIBDDELMAkGA1UEBhMCRVMxDzANBgNVBAgMBk1BRFJJRDEPMA0GA1UE\nBwwGTUFEUklEMTowOAYDVQQLDDFzZWUgY3VycmVudCBhZGRyZXNzIGF0IHd3dy5j\nYW1lcmZpcm1hLmNvbS9hZGRyZXNzMSkwJwYDVQQLDCBDSEFNQkVSUyBPRiBDT01N\nRVJDRSBST09UIC0gMjAxNjESMBAGA1UEBRMJQTgyNzQzMjg3MRgwFgYDVQRhDA9W\nQVRFUy1BODI3NDMyODcxGzAZBgNVBAoMEkFDIENBTUVSRklSTUEgUy5BLjEpMCcG\nA1UEAwwgQ0hBTUJFUlMgT0YgQ09NTUVSQ0UgUk9PVCAtIDIwMTYwggIiMA0GCSqG\nSIb3DQEBAQUAA4ICDwAwggIKAoICAQDqxqSh1K2Zlsmf9bxQAPQsz/J46PIsAifW\ng4wEq9MOe1cgydSvZfSH3TAI185Bo3YK24pG5Kb97QjOcD/6EGB5TGuBVIBV5Od6\nIbZ1mtxe9g6Z/PjC30GOL6vHW20cUFnA7eisgkL+ua8vDEFRnL0AbmRRsjvlNquV\nkRL7McdzrBzYZXY7zhtMTrAfIAb7ULT7m6F5jhaV45/rGEuEqzmTzTeD0Ol8CyeP\n7UII6YZGMqyaJmlwYS0YvT9Q8J72aFBOaZVwwe2TqZdOKaK63cKfbkkIK6P6I/Ep\nXrB9MVmb7YzNpm74+PfYGOjaVulI8kB0fp7NIK8UJFnudzWFv0qZSql13bMm4wbO\nfW9LZKN2NBk+FG+FVDjiiy1AtWRmH1czHHDNw7QoWhQjXPy4vbP+OxJf9rmMHciU\nClbbcn7vJwcNALS/fZk/TUWzm/cdGdBPBPrHc5SIfYsUKpng6ZmSCcbWAWu38NtD\nV2Ibx0RS4pdjus/qzmDmCuUYaC0zgHWgMAdo9tX3Eyw6sJ7oWFVujFZETUMXQQLM\nd9xfRQVZz81g07/S9uL01dyHcTMHGvVvtH89l/tfZPRODgBECenr7D5xGQQXOUhg\nuEv/XshlmSumMvJbhqid6CN0EHjvyyedMbpgi04GUOJQHQdgwkGMFbRbNxwK5QkZ\ncgSKPOMB2wIDAQABo0IwQDAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBSeLmVP\nPlf1q32WxovfszVtSuieizAOBgNVHQ8BAf8EBAMCAQYwDQYJKoZIhvcNAQELBQAD\nggIBAAVpKoWXJlC6QjkckyzST1vRXUQm2m9pK7V7ntD0Si5Ix+x/n8pZerlE9z69\n91BrUZ90/5AaQNCTeZIPiiNei6+BC9CLrWbgKtyaKb012GxAFElCPYkvupsrOLwa\nowu3iNetxhQM7nxJrK7s8j0YT4xtFF0Oqrffd6s7j2JOiwxlxhmOzcAMoXeqtN16\npxMF5jkYx5VkfgO2i5DB5V8AI5jmc9oR0hD/HlMiJ8fTAckvxTsybvDDOMoSZ7y6\nIym7xJVJWgbd1FqQ1BNt59XCfOJYBMDsxL2iPH7GI4F1fKtwXzSElfez1UeWT3HK\neDIIILRCpEJr1SWcsifrwQ5HRAnhKw/QIzZuHLm6TqzM8AyUzkEPa90P1cjgF4ve\nOl1Svul1JR26BQfaVhk8jdHX8VE22ZLvonhRBVi9UswKXm+v2tDlDNtswSPvOTF3\nFwcAjPa6D3D5vL7h5H3hzER6pCHsRz+o1hWl7AGpyHDomGcdvVlUfqFXFTUHxXLJ\nPrcpho2f2jJ5MtzbqOUJ/+9WKv6TsY4qE+2toitrLwTezS+SktY+YLV4AZUHCKls\n4xza++WbI1YgW+nQXMZKJDu847YiFiqEkv+o/pe/o53bYV7uGSos1+sNdlY4dX5J\nAJNXyfwjWvz08d8qnbCMafQQo1WdcDwi/wfWK7aZwJfQ9Cqg\n-----END CERTIFICATE-----"
+                }
+            }
+        }
+    }
+}
+
+### kinds of ca declaration
+
+POST https://10.250.18.105:8443/mgmt/shared/appsvcs/declare
+Authorization: Basic admin:P@ssw0rd123
+Content-Type: application/json
+
+{
+    "class": "AS3",
+    "action": "deploy",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.27.0",
+        "remark": "HTTPS with bidirection auth",
+        "cis-c-6": {
+            "class": "Tenant",
+            "cafe": {
+                "class": "Application",
+                "tls1": {
+                    "class": "TLS_Server",
+                    "certificates": [
+                        {
+                            "certificate": "cert1"
+                        }
+                    ],
+                    "authenticationMode": "require",
+                    "authenticationFrequency": "every-time",
+                    "authenticationTrustCA": "ca1"
+                },
+                "tls2": {
+                    "class": "TLS_Server",
+                    "certificates": [
+                        {
+                            "certificate": "cert2"
+                        }
+                    ],
+                    "authenticationMode": "require",
+                    "authenticationFrequency": "every-time",
+                    "authenticationTrustCA": "ca2"
+                },
+                "tls3": {
+                    "class": "TLS_Server",
+                    "certificates": [
+                        {
+                            "certificate": "cert1"
+                        }
+                    ],
+                    "authenticationMode": "require",
+                    "authenticationFrequency": "every-time",
+                    "authenticationTrustCA": {
+                        "bigip": "/Common/ca-bundle.crt"
+                    }
+                },
+                "cert1": {
+                    "class": "Certificate",
+                    "remark": "coffee.example.com",
+                    "certificate": {
+                        "bigip": "/Common/default.crt"
+                    },
+                    "privateKey": {
+                        "bigip": "/Common/default.key"
+                    }
+                },
+                "ca1": {
+                    "class": "CA_Bundle",
+                    "bundle": {
+                        "bigip": "/Common/ca-bundle.crt"
+                    }
+                },
+                "ca2": {
+                    "class": "CA_Bundle",
+                    "bundle": "-----BEGIN CERTIFICATE-----\nMIIF+jCCA+KgAwIBAgIQAdFs++0ey5zfaqIxz4xU+TANBgkqhkiG9w0BAQwFADCB\niDELMAkGA1UEBhMCVVMxEzARBgNVBAgTCk5ldyBKZXJzZXkxFDASBgNVBAcTC0pl\ncnNleSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5ldHdvcmsxLjAsBgNV\nBAMTJVVTRVJUcnVzdCBSU0EgQ2VydGlmaWNhdGlvbiBBdXRob3JpdHkwHhcNMTUw\nMzExMDAwMDAwWhcNMjUwMzEwMjM1OTU5WjBwMQswCQYDVQQGEwJDTjERMA8GA1UE\nCBMIU2hhbmdoYWkxJTAjBgNVBAoTHFRydXN0QXNpYSBUZWNobm9sb2dpZXMsIElu\nYy4xJzAlBgNVBAMTHlRydXN0QXNpYSBSU0EgRFYgU1NMIFNlcnZlciBDQTCCASIw\nDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKVXxe36oseRAbs4z+/mLAWrYUom\nQDA0DwiDfYyqf8nrTG/wxELxtboEGBF4U5NbEye/i5t9in+mdbzdwpN657myfypS\nl2sC2YyY7ArmRxgTFyrtxhdzBLVnJEly2EAxk06QBwzcEfMJ5dWKpqcDY85K4N/C\nhO4E2BjzZRG7F3kZlo0T2oDbymNUt3J//cFwSiKl4LuSIUmvkUexbEG+75kvMZ5U\n5P3/C/becM61izwn+ftHFS7j9Rn7Hut4yqn+ePUOcBFZ6U02lcRDAPElq3SzyOvW\nmJxUTRiYHrnSK4qFHCBnNmfSlQvKUAo30Az4UiDcro+9YWtriR90DKbZrFECAwEA\nAaOCAXUwggFxMB8GA1UdIwQYMBaAFFN5v1qqK0rPVIDh2JvAnfKyA2bLMB0GA1Ud\nDgQWBBR7FhLOvGeCvXj0NqvcT2sXSgXtpTAOBgNVHQ8BAf8EBAMCAYYwEgYDVR0T\nAQH/BAgwBgEB/wIBADAdBgNVHSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwIgYD\nVR0gBBswGTANBgsrBgEEAbIxAQICMTAIBgZngQwBAgEwUAYDVR0fBEkwRzBFoEOg\nQYY/aHR0cDovL2NybC51c2VydHJ1c3QuY29tL1VTRVJUcnVzdFJTQUNlcnRpZmlj\nYXRpb25BdXRob3JpdHkuY3JsMHYGCCsGAQUFBwEBBGowaDA/BggrBgEFBQcwAoYz\naHR0cDovL2NydC51c2VydHJ1c3QuY29tL1VTRVJUcnVzdFJTQUFkZFRydXN0Q0Eu\nY3J0MCUGCCsGAQUFBzABhhlodHRwOi8vb2NzcC51c2VydHJ1c3QuY29tMA0GCSqG\nSIb3DQEBDAUAA4ICAQAHygz5l1zWzcKT859aQgyDfUsiLyH+UKJ8jqSzOHb8A7Af\niK/K0HSZrg5tKiU90x2K/SpVuMmXlxNlxs7X1oDRvpgf8FHXZeVqm7fxuaFJ1fRi\nY73w9ClVhuvfYs2ziLyFt99nudgz9o/oroCe6gihR3LJW6jyS5LXcWE+uzv5CgLI\n6cHPjQdpgk8AcjqNBtqGiL7WgXRQMKHyb8jeBozKLi9M/VNW44WSaCs0JzXxBglL\n6fYOqOgF9lqrVVp257R3W4oqhbbHZ/2NY39hqs91YCBWhdVQvBYqM5b9N+v2+aEn\nRRYdyabdHUpMJ+5Jmbf9ydAcCix9eS8QMZbgal3vrwbJR6/MqOvuKcrBXe7j7ZxH\nWhL177r+e9SHzUcpCATDUJrL9fjCoBvWifiP9oPCVHkfpEYD9uu7sc+fBfFJP9V5\nmEQd0Vk5neWsNSq8cpfI7Ok4/R920+BD4an1Pkx9tly8P7Vza8aXSyv3OIplRYgr\n4Qf+6Cp2hVSSHL1Sv8D9TwvCqVvH7Zb1WwvuX4UHKo/Ae1cUiiEyavWGBo9o7bnV\ntyRdxTJmn6f6PeKe1u+HTCBoEuoVF22DJcbwTFiJ2U5voyb+OS6XXvIOIWOP+Imz\n3+WHDNM1GuNGDqz25zKCkl03MvK0Yw2FwT/HhSMSs1VmT5iCzaKXS7YgtGETKg==\n-----END CERTIFICATE-----\n-----BEGIN CERTIFICATE-----\nMIIG4DCCBMigAwIBAgIINJotoYIGsrMwDQYJKoZIhvcNAQELBQAwggEMMQswCQYD\nVQQGEwJFUzEPMA0GA1UECAwGTUFEUklEMQ8wDQYDVQQHDAZNQURSSUQxOjA4BgNV\nBAsMMXNlZSBjdXJyZW50IGFkZHJlc3MgYXQgd3d3LmNhbWVyZmlybWEuY29tL2Fk\nZHJlc3MxKTAnBgNVBAsMIENIQU1CRVJTIE9GIENPTU1FUkNFIFJPT1QgLSAyMDE2\nMRIwEAYDVQQFEwlBODI3NDMyODcxGDAWBgNVBGEMD1ZBVEVTLUE4Mjc0MzI4NzEb\nMBkGA1UECgwSQUMgQ0FNRVJGSVJNQSBTLkEuMSkwJwYDVQQDDCBDSEFNQkVSUyBP\nRiBDT01NRVJDRSBST09UIC0gMjAxNjAeFw0xNjA0MTQwNzM1NDhaFw00MDA0MDgw\nNzM1NDhaMIIBDDELMAkGA1UEBhMCRVMxDzANBgNVBAgMBk1BRFJJRDEPMA0GA1UE\nBwwGTUFEUklEMTowOAYDVQQLDDFzZWUgY3VycmVudCBhZGRyZXNzIGF0IHd3dy5j\nYW1lcmZpcm1hLmNvbS9hZGRyZXNzMSkwJwYDVQQLDCBDSEFNQkVSUyBPRiBDT01N\nRVJDRSBST09UIC0gMjAxNjESMBAGA1UEBRMJQTgyNzQzMjg3MRgwFgYDVQRhDA9W\nQVRFUy1BODI3NDMyODcxGzAZBgNVBAoMEkFDIENBTUVSRklSTUEgUy5BLjEpMCcG\nA1UEAwwgQ0hBTUJFUlMgT0YgQ09NTUVSQ0UgUk9PVCAtIDIwMTYwggIiMA0GCSqG\nSIb3DQEBAQUAA4ICDwAwggIKAoICAQDqxqSh1K2Zlsmf9bxQAPQsz/J46PIsAifW\ng4wEq9MOe1cgydSvZfSH3TAI185Bo3YK24pG5Kb97QjOcD/6EGB5TGuBVIBV5Od6\nIbZ1mtxe9g6Z/PjC30GOL6vHW20cUFnA7eisgkL+ua8vDEFRnL0AbmRRsjvlNquV\nkRL7McdzrBzYZXY7zhtMTrAfIAb7ULT7m6F5jhaV45/rGEuEqzmTzTeD0Ol8CyeP\n7UII6YZGMqyaJmlwYS0YvT9Q8J72aFBOaZVwwe2TqZdOKaK63cKfbkkIK6P6I/Ep\nXrB9MVmb7YzNpm74+PfYGOjaVulI8kB0fp7NIK8UJFnudzWFv0qZSql13bMm4wbO\nfW9LZKN2NBk+FG+FVDjiiy1AtWRmH1czHHDNw7QoWhQjXPy4vbP+OxJf9rmMHciU\nClbbcn7vJwcNALS/fZk/TUWzm/cdGdBPBPrHc5SIfYsUKpng6ZmSCcbWAWu38NtD\nV2Ibx0RS4pdjus/qzmDmCuUYaC0zgHWgMAdo9tX3Eyw6sJ7oWFVujFZETUMXQQLM\nd9xfRQVZz81g07/S9uL01dyHcTMHGvVvtH89l/tfZPRODgBECenr7D5xGQQXOUhg\nuEv/XshlmSumMvJbhqid6CN0EHjvyyedMbpgi04GUOJQHQdgwkGMFbRbNxwK5QkZ\ncgSKPOMB2wIDAQABo0IwQDAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQWBBSeLmVP\nPlf1q32WxovfszVtSuieizAOBgNVHQ8BAf8EBAMCAQYwDQYJKoZIhvcNAQELBQAD\nggIBAAVpKoWXJlC6QjkckyzST1vRXUQm2m9pK7V7ntD0Si5Ix+x/n8pZerlE9z69\n91BrUZ90/5AaQNCTeZIPiiNei6+BC9CLrWbgKtyaKb012GxAFElCPYkvupsrOLwa\nowu3iNetxhQM7nxJrK7s8j0YT4xtFF0Oqrffd6s7j2JOiwxlxhmOzcAMoXeqtN16\npxMF5jkYx5VkfgO2i5DB5V8AI5jmc9oR0hD/HlMiJ8fTAckvxTsybvDDOMoSZ7y6\nIym7xJVJWgbd1FqQ1BNt59XCfOJYBMDsxL2iPH7GI4F1fKtwXzSElfez1UeWT3HK\neDIIILRCpEJr1SWcsifrwQ5HRAnhKw/QIzZuHLm6TqzM8AyUzkEPa90P1cjgF4ve\nOl1Svul1JR26BQfaVhk8jdHX8VE22ZLvonhRBVi9UswKXm+v2tDlDNtswSPvOTF3\nFwcAjPa6D3D5vL7h5H3hzER6pCHsRz+o1hWl7AGpyHDomGcdvVlUfqFXFTUHxXLJ\nPrcpho2f2jJ5MtzbqOUJ/+9WKv6TsY4qE+2toitrLwTezS+SktY+YLV4AZUHCKls\n4xza++WbI1YgW+nQXMZKJDu847YiFiqEkv+o/pe/o53bYV7uGSos1+sNdlY4dX5J\nAJNXyfwjWvz08d8qnbCMafQQo1WdcDwi/wfWK7aZwJfQ9Cqg\n-----END CERTIFICATE-----"
+                },
+                "cert2": {
+                    "class": "Certificate",
+                    "remark": "in practice we recommend using a passphrase",
+                    "certificate": "-----BEGIN CERTIFICATE-----\nMIICnDCCAgWgAwIBAgIJAJ5n2b0OCEjwMA0GCSqGSIb3DQEBCwUAMGcxCzAJBgNVBAYTAlVTMRMwEQYDVQQIDApXYXNoaW5ndG9uMRAwDgYDVQQHDAdTZWF0dGxlMRQwEgYDVQQKDAtmNV9OZXR3b3JrczEbMBkGA1UEAwwSc2FtcGxlLmV4YW1wbGUubmV0MB4XDTE3MTEyNjE5NTAyNFoXDTE4MDIyNTE5NTAyNFowZzELMAkGA1UEBhMCVVMxEzARBgNVBAgMCldhc2hpbmd0b24xEDAOBgNVBAcMB1NlYXR0bGUxFDASBgNVBAoMC2Y1X05ldHdvcmtzMRswGQYDVQQDDBJzYW1wbGUuZXhhbXBsZS5uZXQwgZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBALEsuXmSXVQpYjrZPW+WiTBjn491mwZYT7Q92V1HlSBtM6WdWlK1aZN5sovfKtOX7Yrm8xa+e4o/zJ2QYLyyv5O+t2EGN/4qUEjEAPY9mwJdfzRQy6Hyzm84J0QkTuUJ/EjNuPji3D0QJRALUTzu1UqqDCEtiN9OGyXEkh7uvb7BAgMBAAGjUDBOMB0GA1UdDgQWBBSVHPNrGWrjWyZvckQxFYWO59FRFjAfBgNVHSMEGDAWgBSVHPNrGWrjWyZvckQxFYWO59FRFjAMBgNVHRMEBTADAQH/MA0GCSqGSIb3DQEBCwUAA4GBAJeJ9SEckEwPhkXOm+IuqfbUS/RcziifBCTmVyE+Fa/j9pKSYTgiEBNdbJeBEa+gPMlQtbV7Y2dy8TKx/8axVBHiXC5geDML7caxOrAyHYBpnx690xJTh5OIORBBM/a/NvaR+P3CoVebr/NPRh9oRNxnntnqvqD7SW0U3ZPe3tJc\n-----END CERTIFICATE-----",
+                    "privateKey": "-----BEGIN RSA PRIVATE KEY-----\nProc-Type: 4,ENCRYPTED\nDEK-Info: AES-256-CBC,D8FFCE6B255601587CB54EC29B737D31\n\nkv4Fc3Jn0Ujkj0yRjt+gQQfBLSNF2aRLUENXnlr7Xpzqu0Ahr3jS1bAAnd8IWnsR\nyILqVmKsYF2DoHh0tWiEAQ7/y/fe5DTFhK7N4Wml6kp2yVMkP6KC4ssyYPw27kjK\nDBwBZ5O8Ioej08A5sgsLCmglbmtSPHJUn14pQnMTmLOpEtOsu6S+2ibPgSNpdg0b\nCAJNG/KHe+Vkx59qNDyDeKb7FZOlsX30+y67zUq9GQqJEDuysPJ2BUNP0IJXAjst\nFIt1qNoZew+5KDYs7u/lPxcMGTirUhgI84Jy4WcDvSOsP/tKlxj04TbIE3epmSKy\n+TihHkwY7ngIGtcm3Sfqk5jz2RXoj1/Ac3SW8kVTYaOUogBhn7zAq4Wju6Et4hQG\nRGapsJp1aCeZ/a4RCDTxspcKoMaRa97/URQb0hBRGx3DGUhzpmX9zl7JI2Xa5D3R\nmdBXtjLKYJTdIMdd27prBEKhMUpae2rz5Mw4J907wZeBq/wu+zp8LAnecfTe2nGY\nE32x1U7gSEdYOGqnwxsOexb1jKgCa67Nw9TmcMPV8zmH7R9qdvgxAbAtwBl1F9OS\nfcGaC7epf1AjJLtaX7krWmzgASHl28Ynh9lmGMdv+5QYMZvKG0LOg/n3m8uJ6sKy\nIzzvaJswwn0j5P5+czyoV5CvvdCfKnNb+3jUEN8I0PPwjBGKr4B1ojwhogTM248V\nHR69D6TxFVMfGpyJhCPkbGEGbpEpcffpgKuC/mEtMqyDQXJNaV5HO6HgAJ9F1P6v\n5ehHHTMRvzCCFiwndHdlMXUjqSNjww6me6dr6LiAPbejdzhL2vWx1YqebOcwQx3G\n-----END RSA PRIVATE KEY-----",
+                    "passphrase": {
+                        "ciphertext": "ZjVmNQ==",
+                        "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0"
+                    }
+                }
+            }
+        }
+    }
+}

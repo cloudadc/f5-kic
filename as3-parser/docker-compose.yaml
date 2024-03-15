@@ -1,0 +1,9 @@
+version: '3'
+services:
+  AdcParser:
+    ports:
+      - 8081:8081
+    image: f5devcentral/cis-c-as3-parser:v20231215-arm64
+    # image: zongzw/as3-parser:latest-arm64
+
+# docker-compose up -d --remove-orphans --force-recreate

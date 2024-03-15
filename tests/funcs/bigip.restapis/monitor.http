@@ -1,0 +1,28 @@
+### get monitors
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/monitor
+Authorization: Basic admin:F5@osp2019
+
+### http monitor
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/monitor/http/~Common~http
+Authorization: Basic admin:F5@osp2019
+
+### create http moniotr
+
+POST https://10.250.118.253:8443/mgmt/tm/ltm/monitor/http
+Authorization: Basic admin:F5@osp2019
+
+{
+    "name": "my-http-monitor",
+    "interval": 50,
+    "timeout": 20,
+    "send": "GET /\\r\\n",
+    "recv": "HTTP 200 /1.0"
+}
+
+###
+
+DELETE https://10.250.118.253:8443/mgmt/tm/ltm/monitor/http/~Common~my-http-monitor
+Authorization: Basic admin:F5@osp2019
+

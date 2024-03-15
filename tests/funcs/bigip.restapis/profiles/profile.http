@@ -1,0 +1,191 @@
+
+### all
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/profile/
+Authorization: Basic admin:F5@osp2019
+
+### http
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/profile/http/~Common~my-http
+Authorization: Basic admin:F5@osp2019
+
+### http all
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/profile/http/
+Authorization: Basic admin:F5@osp2019
+
+### udp 
+GET https://10.250.118.253:8443/mgmt/tm/ltm/profile/udp/~Common~my-udp
+Authorization: Basic admin:F5@osp2019
+
+### tcp
+GET https://10.250.118.253:8443/mgmt/tm/ltm/profile/tcp/~Common~my-tcp
+Authorization: Basic admin:F5@osp2019
+
+### fastl4
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/profile/fastl4
+Authorization: Basic admin:F5@osp2019
+
+
+### oneconnect
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/profile/one-connect/~Common~oneconnect
+Authorization: Basic admin:F5@osp2019
+
+### clientssl
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/profile/client-ssl/~Common~my-clientssl
+Authorization: Basic admin:F5@osp2019
+
+### post clientssl
+
+POST https://10.250.118.253:8443/mgmt/tm/ltm/profile/client-ssl/
+Authorization: Basic admin:F5@osp2019
+
+{
+    "kind": "tm:ltm:profile:client-ssl:client-sslstate",
+    "name": "my-clientssl",
+    "certKeyChain": [
+        {
+            "name": "default_ca-bundle_0",
+            "appService": "none",
+            "cert": "/Common/default.crt",
+            "chain": "/Common/ca-bundle.crt",
+            "key": "/Common/default.key",
+            "passphrase": "123456"
+        }
+    ]
+}
+
+### patch clientssl
+
+PATCH https://10.250.118.253:8443/mgmt/tm/ltm/profile/client-ssl/~Common~my-clientssl
+Authorization: Basic admin:F5@osp2019
+
+{
+    "kind": "tm:ltm:profile:client-ssl:client-sslstate",
+    "name": "my-clientssl",
+    "certKeyChain": [
+        {
+            "name": "default_ca-bundle_0",
+            "cert": "/Common/default.crt",
+            "chain": "/Common/ca-bundle.crt",
+            "key": "/Common/default.key",
+            "passphrase": "123456"
+        }
+    ]
+}
+
+### post clientssl
+
+DELETE  https://10.250.118.253:8443/mgmt/tm/ltm/profile/client-ssl/~Common~my-clientssl
+Authorization: Basic admin:F5@osp2019
+
+
+### http2
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/profile/http2/~Common~http2
+Authorization: Basic admin:F5@osp2019
+
+### ftp
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/profile/ftp/~Common~ftp
+Authorization: Basic admin:F5@osp2019
+
+
+### create http profile
+# POST https://10.250.118.253:8443/mgmt/tm/ltm/profile/http
+POST https://10.250.85.10/mgmt/tm/ltm/profile/http
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "kind": "tm:ltm:profile:http:httpstate",
+    "name": "my-http",
+    "acceptXff": "enabled",
+    "fallbackHost": "www.zong.com",
+    "fallbackStatusCodes": ["400"],
+    "hsts": {
+        "includeSubdomains": "enabled",
+        "maximumAge": 1607040413,
+        "mode": "disabled",
+        "preload": "enabled"
+    },
+    "insertXforwardedFor": "enabled",
+    "headerErase": "none",
+    "headerInsert": "cm:abc123"
+}
+
+###
+
+GET https://10.250.85.10/mgmt/tm/ltm/profile/http/~Common~my-http
+Authorization: Basic admin:P@ssw0rd123
+### delete http profile
+DELETE https://10.250.118.253:8443/mgmt/tm/ltm/profile/http/~Common~my-http
+Authorization: Basic admin:F5@osp2019
+
+
+### create http profile
+
+POST https://10.145.64.120:8443/mgmt/tm/ltm/profile/http
+Authorization: Basic YWRtaW46UEBzc3cwcmQxMjM=
+Content-Type: application/json
+
+{
+    "acceptXff": "disabled",
+    "hstsIncludeSubdomains": true,
+    "hstsInsert": false,
+    "hstsPeriod": 7862400,
+    "hstsPreload": false,
+    "insertXforwardedFor": "enabled",
+    "knownMethods": [
+        "CONNECT",
+        "DELETE",
+        "GET",
+        "HEAD",
+        "LOCK",
+        "OPTIONS",
+        "POST",
+        "PROPFIND",
+        "PUT",
+        "TRACE",
+        "UNLOCK"
+    ],
+    "maxHeaderCount": 64,
+    "maxHeaderSize": 32768,
+    "maxRequests": 0,
+    "name": "service_name_httpprofile",
+    "oneconnectTransformations": "enabled",
+    "pipelineAction": "allow",
+    "proxyConnectEnabled": false,
+    "proxyType": "reverse",
+    "redirectRewrite": "none",
+    "requestChunking": "preserve",
+    "responseChunking": "selective",
+    "serverAgentName": "BigIP",
+    "truncatedRedirects": false,
+    "unknownMethodAction": "allow",
+    "viaRequest": "remove",
+    "viaResponse": "remove",
+    "webSocketMasking": "unmask",
+    "webSocketsEnabled": false
+}
+
+###
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/profile/tcp/~f5_test003~f5_test003~customTCPProfile
+Authorization: Basic YWRtaW46RjVAb3NwMjAxOQ==
+
+###
+
+PATCH https://10.250.118.253:8443/mgmt/tm/ltm/profile/tcp/~f5_test003~f5_test003~customTCPProfile
+Content-Type: application/json
+Authorization: Basic YWRtaW46RjVAb3NwMjAxOQ==
+
+{"abc":"enabled","ackOnPush":"enabled","autoProxyBufferSize":"enabled","autoReceiveWindowSize":"enabled","autoSendBufferSize":"enabled","closeWaitTimeout":5,"cmetricsCache":"enabled","cmetricsCacheTimeout":0,"congestionControl":"woodside","deferredAccept":"disabled","delayWindowControl":"disabled","delayedAcks":"enabled","dsack":"disabled","earlyRetransmit":"enabled","ecn":"enabled","enhancedLossRecovery":"enabled","fastOpen":"enabled","fastOpenCookieExpiration":21600,"finWait2Timeout":300,"finWaitTimeout":5,"idleTimeout":600,"initCwnd":16,"initRwnd":16,"ipDfMode":"pmtu","ipTosToClient":0,"ipTtlMode":"proxy","ipTtlV4":255,"ipTtlV6":64,"keepAliveInterval":1800,"limitedTransmit":"enabled","linkQosToClient":0,"maxRetrans":8,"maxSegmentSize":0,"md5Signature":"disabled","minimumRto":1000,"mptcp":"disabled","mptcpCsum":"disabled","mptcpCsumVerify":"disabled","mptcpFallback":"reset","mptcpFastjoin":"disabled","mptcpIdleTimeout":300,"mptcpJoinMax":5,"mptcpMakeafterbreak":"disabled","mptcpNojoindssack":"disabled","mptcpRtomax":5,"mptcpRxmitmin":1000,"mptcpSubflowmax":6,"mptcpTimeout":3600,"nagle":"auto","name":"customTCPProfile","partition":"f5_test003","pktLossIgnoreBurst":0,"pktLossIgnoreRate":0,"proxyBufferHigh":262144,"proxyBufferLow":196608,"proxyMss":"enabled","proxyOptions":"disabled","pushFlag":"auto","ratePace":"enabled","ratePaceMaxRate":0,"receiveWindowSize":131072,"resetOnTimeout":"enabled","rexmtThresh":3,"selectiveAcks":"enabled","selectiveNack":"disabled","sendBufferSize":262144,"slowStart":"enabled","subPath":"f5_test003","synCookieEnable":"enabled","synCookieWhitelist":"disabled","synMaxRetrans":3,"synRtoBase":3000,"tailLossProbe":"enabled","timeWaitRecycle":"enabled","timeWaitTimeout":2000,"timestamps":"enabled","verifiedAccept":"disabled","zeroWindowTimeout":20000}
+
+### GET redirect profiles
+
+GET https://10.250.18.105:8443/mgmt/tm/ltm/virtual/~test~harbor-https~vs_harbor_443-Redirect-/profiles
+Content-Type: application/json
+Authorization: Basic admin:P@ssw0rd123

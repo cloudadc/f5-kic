@@ -1,0 +1,43 @@
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/persistence/
+Authorization: Basic admin:F5@osp2019
+
+### persistence cookie
+
+GET https://10.250.18.105:8443/mgmt/tm/ltm/persistence/cookie/~Common~my-cookie
+Authorization: Basic admin:P@ssw0rd123
+
+### persistence source-addr
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/persistence/source-addr/~Common~my-persistence-source_addr
+Authorization: Basic admin:F5@osp2019
+
+
+POST https://10.250.118.253:8443/mgmt/tm/ltm/persistence/cookie/
+Authorization: Basic admin:P@ssw0rd123
+
+{
+
+}
+
+###
+
+disabled
+123
+$M$FA$+4NRltVxezVAPNfkozBbxQ==
+
+$M$mM$4fVOt7Z5GEty6Bauc1b1uA==
+
+f5sv
+JE0kNkgkUHBRZXdVUEh4MnJLZS9Vd3ordUNLUT09 $M$6H$PpQewUPHx2rKe/Uwz+uCKQ==
+
+$M$pz$qC+6S4MnI2DwxNvG8XoQtQ==
+
+$M$My$hBtHsS5KxwwzOuw8OLinww==
+
+$M$Ts$VwUeM4ny3N4GsPy2x/FujQ==
+
+###
+
+GET https://10.250.18.105:8443/mgmt/tm/ltm/persistence/cookie/~mytenant~myapp~cookie_encryption
+Authorization: Basic admin:P@ssw0rd123

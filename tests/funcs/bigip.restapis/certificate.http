@@ -1,0 +1,68 @@
+
+
+### clientssl
+
+GET https://10.250.2.211/mgmt/tm/ltm/profile/client-ssl/~Common~CORE_d7750140-28a8-4472-8184-34d1ce785247_CORE_e497bca4-6870-481e-90e7-15f719853a91
+Authorization: Basic admin:P@ssw0rd123
+
+### 
+GET https://10.250.2.211/mgmt/tm/sys/crypto/cert
+Authorization: Basic admin:P@ssw0rd123
+
+
+### 
+GET https://10.250.2.211/mgmt/tm/sys/crypto/key
+Authorization: Basic admin:P@ssw0rd123
+
+### 
+DELETE https://10.250.2.211/mgmt/tm/sys/crypto/key/~Common~CORE_e497bca4-6870-481e-90e7-15f719853a91.key
+Authorization: Basic admin:P@ssw0rd123
+
+###
+
+POST https://10.250.18.105:8443/mgmt/tm/sys/file/ssl-cert
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "bundleCertificatesReference": {
+        "isSubcollection": true,
+        "link": "https://localhost/mgmt/tm/sys/file/ssl-cert/~Sample_02~A1~webcert.crt/bundle-certificates?ver=15.1.0.5"
+    },
+    "certValidatorsReference": {
+        "isSubcollection": true,
+        "link": "https://localhost/mgmt/tm/sys/file/ssl-cert/~Sample_02~A1~webcert.crt/cert-validators?ver=15.1.0.5"
+    },
+    "certificateKeyCurveName": "none",
+    "certificateKeySize": 1024,
+    "checksum": "SHA1:963:bafd22aab84fe0b29d0012f2ffb12640466ee454",
+    "createTime": "2022-06-16T05:43:14Z",
+    "createdBy": "admin",
+    "expirationDate": 1519588224,
+    "expirationString": "Feb 25 19:50:24 2018 GMT",
+    "fingerprint": "SHA256/E7:08:6E:58:67:61:E4:FE:F4:E0:DC:D5:72:8D:D5:5B:E7:C4:05:94:B7:5A:34:55:E0:A4:AC:30:C6:EA:27:3B",
+    "fullPath": "/Sample_02/A1/webcert.crt",
+    "generation": 2902,
+    "isBundle": "false",
+    "issuer": "CN=sample.example.net,O=f5_Networks,L=Seattle,ST=Washington,C=US",
+    "keyType": "rsa-public",
+    "kind": "tm:sys:file:ssl-cert:ssl-certstate",
+    "lastUpdateTime": "2022-06-16T05:43:14Z",
+    "mode": 33188,
+    "name": "webcert1.crt",
+    "partition": "Sample_02",
+    "revision": 1,
+    "selfLink": "https://localhost/mgmt/tm/sys/file/ssl-cert/~Sample_02~A1~webcert.crt?ver=15.1.0.5",
+    "serialNumber": "9e:67:d9:bd:0e:08:48:f0",
+    "size": 963,
+    "sourcePath": "file:/var/config/rest/downloads/_Sample_02_A1_webcert.crt",
+    "subPath": "A1",
+    "subject": "CN=sample.example.net,O=f5_Networks,L=Seattle,ST=Washington,C=US",
+    "updatedBy": "admin",
+    "version": 3
+}
+
+
+###
+
+DELETE https://10.250.18.105:8443/mgmt/tm/sys/file/ssl-cert/~Sample_02~A1~webcert1.crt
+Authorization: Basic admin:P@ssw0rd123

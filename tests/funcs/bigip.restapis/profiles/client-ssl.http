@@ -1,0 +1,36 @@
+### GET redirect profiles
+
+POST https://10.250.18.105:8443/mgmt/tm/ltm/profile/client-ssl
+Content-Type: application/json
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "alertTimeout": "indefinite",
+    "allowExpiredCrl": "disabled",
+    "authenticate": "once",
+    "c3dDropUnknownOcspStatus": "drop",
+    "cacheTimeout": 3600,
+    "cert": "/Common/default.crt",
+    "certLookupByIpaddrPort": "disabled",
+    "ciphers": "DEFAULT",
+    "insertEmptyFragmentsEnabled": false,
+    "key": "/Common/default.key",
+    "name": "webtls1",
+    "namingScheme": "numbered",
+    "ocspStapling": "disabled",
+    "passphrase": "f5f5",
+    "peerCertMode": "ignore",
+    "renegotiation": "enabled",
+    "retainCertificate": "true",
+    "singleUseDhEnabled": false,
+    "sniRequire": "false",
+    "ssl3Enabled": true,
+    "sslC3d": "disabled",
+    "sslEnabled": true,
+    "sslForwardProxy": "disabled",
+    "sslForwardProxyBypass": "disabled",
+    "tls1_0Enabled": true,
+    "tls1_1Enabled": true,
+    "tls1_2Enabled": true,
+    "tls1_3Enabled": false
+}

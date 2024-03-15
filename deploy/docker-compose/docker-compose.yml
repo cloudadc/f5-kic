@@ -1,0 +1,34 @@
+# docker-compose up -d --remove-orphans --force-recreate
+
+version: '3'
+services:
+  f5-kic-container:
+    image: ${F5_KIC_DOCKER_IMAGE}
+    container_name: f5-kic-container
+    env_file:
+      - ./compose.env
+    volumes:
+      - ${KUBE_CONFIG_FILEPATH}:/kube.config
+    ports:
+      - 30080:8080
+    command: [
+      "/f5-kic-linux",
+      "--bigip-url", "${BIGIP_URL}",
+      "--bigip-username", "${BIGIP_USERNAME}",
+      "--bigip-password", "${BIGIP_PASSWORD}",
+      "--as3-service", "http://as3-parser:8081",
+      "--kube-config", "/kube.config",
+      "--log-level", "debug",
+      "--namespace", "default",
+      "--namespace", "namespace-1",
+      "--namespace-label", "resource.zone=deployment"  # for test.automation
+    ]
+  as3-parser:
+    image: ${AS3_SERVICE_DOCKER_IMAGE}
+    container_name: as3-parser
+    env_file:
+      - ./compose.env
+    ports:
+      - 8081:8081
+
+

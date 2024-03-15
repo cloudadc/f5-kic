@@ -1,0 +1,153 @@
+
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-as3-http-template-hsts-configmap
+  namespace: default
+  labels:
+    f5type: virtual-server
+    as3: "true"
+data:
+  template: |
+    {
+        "class": "AS3",
+        "action": "dry-run",
+        "persist": true,
+        "declaration": {
+            "class": "ADC",
+            "schemaVersion": "3.19.0",
+            "id": "cebbank-configmap-k8s-ceb001",
+            "remark": "HTTP application",
+            "k8s-ceb001": {
+                "class": "Tenant",
+                "k8s-ceb001-svc-1-app": {
+                    "class": "Application",
+                    "template": "generic",
+                    "k8s-ceb001-svc-1-vs-80": {
+                        "class": "Service_HTTP",
+                        "virtualAddresses": [
+                            "172.16.142.113"
+                        ],
+                        "virtualPort": 80,
+                        "snat": "auto",
+                        "profileHTTP": {
+                            "use": "http_X-Forwarded-For"
+                        },
+                        "persistenceMethods": [
+                            {
+                                "use": "cookie_encryption"
+                            }
+                        ],
+                        "profileMultiplex": {
+                            "use": "oneconnectprofile"
+                        },
+                        "iRules": [
+                            "irules_test"
+                        ],
+                        "pool": "k8s-ceb001-svc-1-pool-8080"
+                    },
+                    "cookie_encryption": {
+                        "class": "Persist",
+                        "persistenceMethod": "cookie",
+                        "encrypt": true,
+                        "cookieMethod": "insert",
+                        "passphrase": {
+                            "ciphertext": "a3RjeGZ5Z2Q=",
+                            "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0="
+                        }
+                    },
+                    "oneconnectprofile": {
+                        "class": "Multiplex_Profile",
+                        "sourceMask": "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"
+                    },
+                    "http_X-Forwarded-For": {
+                        "class": "HTTP_Profile",
+                        "xForwardedFor": true,
+                        "insertHeader": {
+                            "name": "X-Forwarded-Proto",
+                            "value": "https"
+                        }
+                    },
+                    "irules_test": {
+                        "class": "iRule",
+                        "iRule": {
+                            "base64": "d2hlbiBIVFRQX1JFUVVFU1QgewogIEhUVFA6OmhlYWRlciBpbnNlcnQgWC1SZWFsLUlQIFtJUDo6cmVtb3RlX2FkZHJdCiAgIGlmIHsgW0hUVFA6Omhvc3RdIGVxdWFscyAiaGFyYm9yLWRldm9wcy11YXQuc2FueS5jb20uY24iIH0gewogICAgICBpZiAgeyBbSFRUUDo6dXJpXSBzdGFydHNfd2l0aCAiL2FwaSIgfSB7CiAgICAgICBwb29sIHBvb2wtdG8tcmVkaXJlY3QKICAgICAgfQogICAgICBlbHNlaWYgeyBbSFRUUDo6dXJpXSBzdGFydHNfd2l0aCAiL3NlcnZpY2UiIH0gewogICAgICAgcG9vbCBwb29sLXRvLXJlZGlyZWN0CiAgICAgIH0KICAgICAgZWxzZWlmIHsgW0hUVFA6OnVyaV0gc3RhcnRzX3dpdGggIi92MiIgfSB7CiAgICAgICBwb29sIHBvb2wtdG8tcmVkaXJlY3QKICAgICAgfQogICAgICBlbHNlaWYgeyBbSFRUUDo6dXJpXSBzdGFydHNfd2l0aCAiL2NoYXJ0cmVwbyIgfSB7CiAgICAgICBwb29sIHBvb2wtdG8tcmVkaXJlY3QKICAgICAgfQogICAgICBlbHNlaWYgeyBbSFRUUDo6dXJpXSBzdGFydHNfd2l0aCAiL2MiIH0gewogICAgICAgcG9vbCBwb29sLXRvLXJlZGlyZWN0CiAgICAgIH0gZWxzZSB7CiAgICAgIHBvb2wgcG9vbC10by1yZWRpcmVjdCAKICAgICB9CiAgIH0KIH0K"
+                        }
+                    },
+                    "k8s-ceb001-svc-1-http-8080": {
+                        "class": "Monitor",
+                        "monitorType": "http",
+                        "send": "GET /coffee/ HTTP/1.1\r\nHost:f5.monitor.com\r\n\r\n",
+                        "interval": 5,
+                        "timeout": 16,
+                        "receive": "coffee"
+                    },
+                    "k8s-ceb001-svc-1-pool-8080": {
+                        "class": "Pool",
+                        "monitors": [
+                            {
+                                "use": "k8s-ceb001-svc-1-http-8080"
+                            }
+                        ],
+                        "loadBalancingMode": "least-connections-member",
+                        "minimumMembersActive": 0,
+                        "members": [
+                            {
+                                "servicePort": 80,
+                                "serverAddresses": []
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cm-as3-http-template-hsts-deployment
+  namespace: default
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      run: cm-as3-http-template-hsts
+  template:
+    metadata:
+      labels:
+        run: cm-as3-http-template-hsts
+    spec:
+      containers:
+      - image: "nginx:latest"
+        imagePullPolicy: IfNotPresent
+        name: cm-as3-http-template-hsts
+        ports:
+        - containerPort: 80
+          protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cm-as3-http-template-hsts
+  namespace: default
+  labels:
+    cis.f5.com/as3-tenant: k8s-ceb001
+    cis.f5.com/as3-app: k8s-ceb001-svc-1-app
+    cis.f5.com/as3-pool: k8s-ceb001-svc-1-pool-8080
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 80
+  selector:
+    run: cm-as3-http-template-hsts
+  sessionAffinity: None
+  type: ClusterIP

@@ -1,0 +1,44 @@
+GET https://10.250.15.180/mgmt/tm/ltm/virtual-address
+Authorization: Basic admin:P@ssw0rd123
+
+
+###
+
+POST https://10.250.118.253:8443/mgmt/tm/ltm/virtual-address
+Authorization: Basic admin:F5@osp2019
+
+{
+    "address":"172.16.142.113",
+    "arp":"disabled",
+    "icmpEcho":"enabled",
+    "name":"app_svc_vip2",
+    "partition":"f5_test003",
+    "routeAdvertisement":"disabled",
+    "spanning":"disabled",
+    "subPath":"",
+    "trafficGroup":"default"
+}
+
+### 
+PATCH https://10.250.15.180/mgmt/tm/ltm/virtual-address/~f5_test003~172.16.10.10
+Authorization: Basic admin:P@ssw0rd123
+
+{
+      "name": "new_name",
+      "partition": "f5_test003",
+      "fullPath": "/f5_test003/new_name",
+      "address": "172.16.10.11",
+      "arp": "disabled",
+      "autoDelete": "true",
+      "connectionLimit": 0,
+      "enabled": "yes",
+      "floating": "enabled",
+      "icmpEcho": "enabled",
+      "inheritedTrafficGroup": "true",
+      "mask": "255.255.255.255",
+      "routeAdvertisement": "disabled",
+      "serverScope": "any",
+      "spanning": "disabled",
+      "trafficGroup": "/Common/traffic-group-1",
+      "unit": 1
+    }

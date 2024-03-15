@@ -1,0 +1,162 @@
+
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cm-as3-canary-template-configmap
+  namespace: default
+  labels:
+    f5type: virtual-server
+    as3: "true"
+data:
+  template: |
+    {
+        "class": "AS3",
+        "action": "deploy",
+        "persist": true,
+        "declaration": {
+            "class": "ADC",
+            "schemaVersion": "3.19.0",
+            "id": "cebbank-configmap-k8s-ceb001",
+            "remark": "HTTP application",
+            "k8s-ceb001": {
+               "class": "Tenant",
+                "k8s-ceb001-svc-1-app": {
+                    "class": "Application",
+                    "template": "generic",
+                    "k8s-ceb001-svc-1-vs-80": {
+                        "class": "Service_HTTP",
+                        "virtualAddresses": [
+                            "10.250.16.202"
+                        ],
+                        "virtualPort": 81,
+                        "profileHTTP": {
+                            "use": "http_X-Forwarded-For1"
+                        },
+                        "persistenceMethods": [
+                            {
+                                "use": "cookie_encryption"
+                            }
+                        ],
+                        "iRules": [
+                            "irule_k8s-ceb001-svc-1"
+                        ],
+                        "pool": "k8s-ceb001-svc-1-pool-8080"
+                    },
+                    "irule_k8s-ceb001-svc-1": {
+                        "class": "iRule",
+                        "remark": "switch between pools",
+                        "iRule": "when HTTP_REQUEST {\n if { [HTTP::uri] starts_with \"/coffee\" } {\n pool /k8s-ceb001/k8s-ceb001-svc-1-app/k8s-ceb001-svc-1-pool-8080 \n } else { \n pool /k8s-ceb001/k8s-ceb001-svc-1-app/k8s-ceb001-app-svc-4-pool-8080 \n } \n}"
+                    },
+                    "cookie_encryption": {
+                        "class": "Persist",
+                        "persistenceMethod": "cookie",
+                        "encrypt": true,
+                        "cookieMethod": "insert",
+                        "passphrase": {
+                            "ciphertext": "a3RjeGZ5Z2Q=",
+                            "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJub25lIn0="
+                        }
+                    },
+                    "http_X-Forwarded-For1": {
+                        "class": "HTTP_Profile",
+                        "xForwardedFor": true
+                    },
+                    "k8s-ceb001-svc-1-http-8080": {
+                        "class": "Monitor",
+                        "monitorType": "http",
+                        "send": "GET /coffee/ HTTP/1.1\r\nHost:f5.monitor.com\r\n\r\n",
+                        "interval": 5,
+                        "timeout": 16,
+                        "receive": "coffee"
+                    },
+                    "k8s-ceb001-app-svc-4-pool-8080": {
+                        "class": "Pool",
+                        "monitors": [
+                            "tcp"
+                        ],
+                        "minimumMembersActive": 0,
+                        "members": [
+                            {
+                                "servicePort": 80,
+                                "connectionLimit": 50,
+                                "serverAddresses": []
+                            }
+                        ]
+                    },
+                    "k8s-ceb001-svc-1-pool-8080": {
+                        "class": "Pool",
+                        "monitors": [
+                            {
+                                "use": "k8s-ceb001-svc-1-http-8080"
+                            }
+                        ],
+                        "loadBalancingMode": "least-connections-member",
+                        "minimumMembersActive": 0,
+                        "members": [
+                            {
+                                "servicePort": 80,
+                                "serverAddresses": []
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    }
+
+
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cm-as3-canary-template-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: cm-as3-canary-template
+  template:
+    metadata:
+      labels:
+        run: cm-as3-canary-template
+    spec:
+      containers:
+      - image: "nginx:latest"
+        imagePullPolicy: IfNotPresent
+        name: cm-as3-canary-template
+        ports:
+        - containerPort: 80
+          protocol: TCP
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: cm-as3-canary-template
+  namespace: default
+  labels:
+    cis.f5.com/as3-tenant: k8s-ceb001
+    cis.f5.com/as3-app: k8s-ceb001-svc-1-app
+    #cis.f5.com/as3-pool: k8s-ceb001-svc-1-pool-8080
+    cis.f5.com/as3-pool: k8s-ceb001-app-svc-4-pool-8080
+spec:
+  ports:
+  - name: p1
+    port: 8080
+    protocol: TCP
+    targetPort: 80
+  - name: p2
+    port: 8081
+    protocol: TCP
+    targetPort: 81
+  selector:
+    run: cm-as3-canary-template
+  sessionAffinity: None
+  type: ClusterIP

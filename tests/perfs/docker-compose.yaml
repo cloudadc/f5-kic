@@ -1,0 +1,8 @@
+version: "3"
+services:
+  prometheus_on_k8s_master:
+    image: prom/prometheus:latest
+    volumes:
+      - /root/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090

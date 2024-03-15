@@ -1,0 +1,81 @@
+### GET
+GET https://10.250.15.109/mgmt/tm/net/fdb/tunnel/~Common~fl-tunnel/records
+Authorization: Basic admin:P@ssw0rd123
+
+### POST fdb records
+PATCH https://10.250.15.109/mgmt/tm/net/fdb/tunnel/~Common~fl-tunnel
+Authorization: Basic admin:P@ssw0rd123
+
+
+{
+    "name": "fl-tunnel",
+  "records": [
+    {
+      "name": "1e:c3:5c:6e:ea:f1",
+      "endpoint": "10.250.18.125"
+    },
+    {
+      "name": "86:5b:90:dd:1e:df",
+      "endpoint": "10.250.18.102"
+    },
+    {
+      "name": "ce:43:f8:90:9c:63",
+      "endpoint": "10.250.18.124"
+    },
+    {
+      "name": "ce:43:f8:90:9c:63",
+      "endpoint": "10.250.18.124"
+    },
+    {
+      "name": "1e:c3:5c:6e:ea:f1",
+      "endpoint": "10.250.18.125"
+    },
+    {
+      "name": "86:5b:90:dd:1e:df",
+      "endpoint": "10.250.18.102"
+    },
+    {
+      "name": "ce:43:f8:90:9c:63",
+      "endpoint": "10.250.18.124"
+    },
+    {
+      "name": "ce:43:f8:90:9c:63",
+      "endpoint": "10.250.18.124"
+    }
+  ]
+}
+
+
+#### POST /tm/net/fdb/tunnel
+POST  https://10.250.15.109/mgmt/tm/net/fdb/tunnel
+Content-Type: application/json
+Authorization: Basic admin:P@ssw0rd123
+
+{
+  "name":"/Common/fl-tunnel",
+  "partition":"Common",
+  "records":[
+    {"endpoint":"10.250.18.125","name":"1e:c3:5c:6e:ea:f1"},
+    {"endpoint":"10.250.18.102","name":"86:5b:90:dd:1e:df"},
+    {"endpoint":"10.250.18.124","name":"ce:43:f8:90:9c:63"},
+    {"endpoint":"10.250.18.102","name":"86:5b:90:dd:1e:df"}
+    ],
+    "subPath":""
+    }
+
+#### PATCH /tm/net/fdb/tunnel
+PATCH  https://10.250.15.109/mgmt/tm/net/fdb/tunnel/~Common~fl-tunnel
+Content-Type: application/json
+Authorization: Basic admin:P@ssw0rd123
+
+{
+  "name":"/Common/fl-tunnel",
+  "partition":"Common",
+  "records":[
+    {"endpoint":"10.250.18.125","name":"1e:c3:5c:6e:ea:f1"},
+    {"endpoint":"10.250.18.102","name":"86:5b:90:dd:1e:df"},
+    {"endpoint":"10.250.18.124","name":"ce:43:f8:90:9c:63"},
+    {"endpoint":"10.250.18.102","name":"86:5b:90:dd:1e:df"}
+    ],
+    "subPath":""
+    }

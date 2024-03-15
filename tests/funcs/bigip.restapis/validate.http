@@ -1,0 +1,281 @@
+
+###
+
+GET http://localhost:8081/validate
+Authorization: Basic admin:P@ssw0rd123
+
+###
+
+GET https://10.250.18.105:8443/mgmt/shared/appsvcs/info
+Authorization: Basic admin:P@ssw0rd123
+
+
+###
+
+POST https://10.250.18.105:8443/mgmt/shared/appsvcs/declare
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "dry-run",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "scratch": "defaults-only",
+        "schemaVersion": "3.30.0",
+        "id": "f5-hub01",
+        "cistest1": {
+            "class": "Tenant",
+            "app-1": {
+                "class": "Application",
+                "template": "generic",
+                "app_svc_vs": {
+                    "class": "Service_HTTP",
+                    "persistenceMethods": [
+                        "cookie"
+                    ],
+                    "virtualAddresses": [
+                        "10.1.10.1"
+                    ],
+                    "snat": "self",
+                    "virtualPort": 80,
+                    "serviceDownImmediateAction": "reset",
+                    "pool": "app-1_app_svc_pool"
+                },
+                "app-1_app_svc_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "tcp"
+                    ],
+                    "loadBalancingMode": "least-connections-member",
+                    "members": [
+                        {
+                            "servicePort": 8080,
+                            "serverAddresses": []
+                        }
+                    ]
+                }
+            }
+        },
+        "cistest2": {
+            "class": "Tenant",
+            "app-1": {
+                "class": "Application",
+                "template": "generic",
+                "app_svc_vs": {
+                    "class": "Service_HTTP",
+                    "persistenceMethods": [
+                        "cookie"
+                    ],
+                    "virtualAddresses": [
+                        "10.1.10.2"
+                    ],
+                    "snat": "self",
+                    "virtualPort": 80,
+                    "pool": "app-1_app_svc_pool"
+                },
+                "app-1_app_svc_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "tcp"
+                    ],
+                    "loadBalancingMode": "least-connections-member",
+                    "members": [
+                        {
+                            "servicePort": 8080,
+                            "serverAddresses": []
+                        }
+                    ]
+                }
+            }
+        },
+        "cistest3": {
+            "class": "Tenant",
+            "app-1": {
+                "class": "Application",
+                "template": "generic",
+                "app_svc_vs": {
+                    "class": "Service_HTTP",
+                    "persistenceMethods": [
+                        "cookie"
+                    ],
+                    "virtualAddresses": [
+                        "10.1.10.3"
+                    ],
+                    "snat": "self",
+                    "virtualPort": 80,
+                    "pool": "app-1_app_svc_pool"
+                },
+                "app-1_app_svc_pool": {
+                    "class": "Pool",
+                    "monitors": [
+                        "tcp"
+                    ],
+                    "loadBalancingMode": "least-connections-member",
+                    "members": [
+                        {
+                            "servicePort": 8080,
+                            "serverAddresses": []
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
+
+###
+
+POST https://10.250.18.105:8443/mgmt/shared/appsvcs/declare
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "class": "AS3",
+    "action": "dry-run",
+    "persist": true,
+    "declaration": {
+        "class": "ADC",
+        "schemaVersion": "3.18.0",
+        "label": "http",
+        "id": "pingan_cis_test",
+        "Tenant1": {
+            "class": "Tenant",
+            "App1": {
+                "class": "Application",
+                "template": "generic",
+                "tea_vs": {
+                    "class": "Service_L4",
+                    "virtualAddresses": [
+                        "10.1.10.100"
+                    ],
+                    "virtualPort": 80,
+                    "persistenceMethods": [
+                        "source-address"
+                    ],
+                    "pool": "tea"
+                },
+                "tea": {
+                    "class": "Pool",
+                    "monitors": [
+                        "http"
+                    ],
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                }
+            },
+            "App2": {
+                "class": "Application",
+                "template": "generic",
+                "coffee_vs": {
+                    "class": "Service_HTTP",
+                    "persistenceMethods": [
+                        "cookie"
+                    ],
+                    "virtualAddresses": [
+                        "10.1.10.101"
+                    ],
+                    "profileTCP": {
+                        "use": "tcp_profile_600"
+                    },
+                    "profileHTTP": {
+                        "use": "http_profile_XFF"
+                    },
+                    "profileTrafficLog": {
+                        "bigip": "/Common/logging-profile"
+                    },
+                    "profileProtocolInspection": {
+                        "bigip": "/Common/my_http_ips"
+                    },
+                    "profileDOS": {
+                        "bigip": "/Common/my_http_ddos"
+                    },
+                    "securityLogProfiles": [
+                        {
+                            "bigip": "/Common/logging-ljx"
+                        }
+                    ],
+                    "pool": "coffee"
+                },
+                "coffee": {
+                    "class": "Pool",
+                    "monitors": [
+                        {
+                            "use": "my_http_monitor"
+                        }
+                    ],
+                    "loadBalancingMode": "least-connections-member",
+                    "members": [
+                        {
+                            "servicePort": 80,
+                            "serverAddresses": []
+                        }
+                    ]
+                },
+                "tcp_profile_600": {
+                    "class": "TCP_Profile",
+                    "idleTimeout": 600
+                },
+                "http_profile_XFF": {
+                    "class": "HTTP_Profile",
+                    "xForwardedFor": true
+                },
+                "my_http_monitor": {
+                    "class": "Monitor",
+                    "monitorType": "http",
+                    "send": "GET / HTTP/1.1\r\nCONNECTION:CLOSE\r\nHost:coffee",
+                    "receive": "Server address",
+                    "interval": 5
+                }
+            }
+        }
+    }
+}
+
+###
+
+POST http://localhost:8081/validate
+Content-Type: application/json
+
+{
+    "class": "ADC",
+    "id": "systest-automation-configmap",
+    "mytenant": {
+        "class": "Tenant",
+        "myapp": {
+            "class": "Application",
+            "myprofile-http": {
+                "class": "HTTP_Profile",
+                "xForwardedFor": true
+            },
+            "myprofile-oneconnect": {
+                "class": "Multiplex_Profile",
+                "maxConnectionReuse": 5,
+                "sourceMask": "255.255.255.255"
+            },
+            "myvirtual": {
+                "class": "Service_HTTP",
+                "persistenceMethods": [
+                    "cookie"
+                ],
+                "profileHTTP": {
+                    "use": "myprofile-http"
+                },
+                "profileMultiplex": {
+                    "use": "myprofile-oneconnect"
+                },
+                "snat": "auto",
+                "virtualAddresses": [
+                    "197.14.222.12"
+                ],
+                "virtualPort": 80
+            },
+            "template": "generic"
+        }
+    },
+    "remark": "HTTP application",
+    "schemaVersion": "3.19.0"
+}

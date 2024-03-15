@@ -1,0 +1,16 @@
+---
+
+- hosts: localhost
+  gather_facts: false
+  remote_user: root
+  vars_files:
+    - 0.7.test-vars.json
+  tasks:
+    - name: generate resource yaml
+      template:
+        src: '{{ src }}'
+        dest: ./tmp-resources.yaml
+
+    - name: executing {{ action }}
+      shell: |
+        kubectl {{ action }} -f tmp-resources.yaml

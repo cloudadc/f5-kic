@@ -1,0 +1,68 @@
+### snatpool
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/snatpool
+Authorization: Basic admin:F5@osp2019
+
+### snatpool
+
+GET https://10.250.118.253:8443/mgmt/tm/ltm/snat
+Authorization: Basic admin:F5@osp2019
+
+
+#### PATCH /tm/ltm/virtual/~test-virtual-tenant~myapp~myvirtual
+PATCH https://10.250.18.105:8443/mgmt/tm/ltm/virtual/~test-virtual-tenant~myapp~myvirtual
+Content-Type: application/json
+Authorization: Basic YWRtaW46UEBzc3cwcmQxMjM=
+
+{
+    "addressStatus": "yes",
+    "connectionLimit": 0,
+    "description": "myapp",
+    "destination": "10.123.234.11:81",
+    "enable": true,
+    "httpMrfRoutingEnabled": false,
+    "ipProtocol": "tcp",
+    "lastHop": "default",
+    "mirror": "disabled",
+    "name": "myvirtual",
+    "nat64": "disabled",
+    "partition": "test-virtual-tenant",
+    "persist": [
+        {
+            "name": "cookie"
+        }
+    ],
+    "profiles": [
+        {
+            "name": "/Common/http"
+        },
+        {
+            "name": "/Common/f5-tcp-progressive"
+        }
+    ],
+    "rateLimit": 0,
+    "serviceDownImmediateAction": "none",
+    "shareAddresses": false,
+    "sourceAddressTranslation": {
+        "type": "automap"
+    },
+    "sourcePort": "preserve",
+    "subPath": "myapp",
+    "translateAddress": "enabled",
+    "translatePort": "enabled",
+    "virtualType": "standard"
+}
+
+
+#### PATCH /tm/ltm/virtual/~test-virtual-tenant~myapp~myvirtual
+PATCH https://10.250.18.105:8443/mgmt/tm/ltm/virtual/~test-virtual-tenant~myapp~myvirtual
+Content-Type: application/json
+Authorization: Basic YWRtaW46UEBzc3cwcmQxMjM=
+
+{"addressStatus":"yes","connectionLimit":0,"description":"myapp","destination":"10.123.234.11:81","enable":true,"httpMrfRoutingEnabled":false,"ipProtocol":"tcp","lastHop":"default","mirror":"disabled","name":"myvirtual","nat64":"disabled","partition":"test-virtual-tenant","persist":[{"name":"cookie"}],"profiles":[{"name":"/Common/http"},{"name":"/Common/f5-tcp-progressive"}],"rateLimit":0,"serviceDownImmediateAction":"none","shareAddresses":false,"sourceAddressTranslation":{"type":"automap"},"sourcePort":"preserve","subPath":"myapp","translateAddress":"enabled","translatePort":"enabled","virtualType":"standard"}
+
+#### DELETE /tm/ltm/snatpool/~test-virtual-tenant~myapp~myvirtual-self
+DELETE https://10.250.18.105:8443/mgmt/tm/ltm/snatpool/~test-virtual-tenant~myapp~myvirtual-self
+Content-Type: application/json
+Authorization: Basic YWRtaW46UEBzc3cwcmQxMjM=
+

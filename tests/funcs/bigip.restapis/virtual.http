@@ -1,0 +1,131 @@
+###
+
+GET https://10.250.15.180/mgmt/tm/ltm/virtual
+Authorization: Basic admin:P@ssw0rd123
+
+
+### virtual
+
+GET https://10.250.15.180/mgmt/tm/ltm/virtual/my-virtual-standard-tcp
+Authorization: Basic admin:P@ssw0rd123
+
+
+### virtual/profile
+GET https://10.250.15.180/mgmt/tm/ltm/virtual/~Common~my-virtual-standard-tcp/profiles
+Authorization: Basic admin:P@ssw0rd123
+
+### tcp
+GET https://10.250.15.180/mgmt/tm/ltm/profile/tcp/~Common~my-tcp
+Authorization: Basic admin:P@ssw0rd123
+
+###
+GET https://10.250.15.180/mgmt/tm/ltm/virtual-address/~Common~1.2.3.4
+Authorization: Basic admin:P@ssw0rd123
+
+### create virtual
+
+POST https://10.250.15.180/mgmt/tm/ltm/virtual
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "kind": "tm:ltm:virtual:virtualstate",
+    "name": "my-virtual-standard-tcp_customized",
+    "destination": "6.7.8.9:9000",
+    "ipProtocol": "tcp",
+    "profilesReference": {
+        "items":[
+             {"name": "fastL4"}
+         ],
+         "isSubcollection": true
+    }
+}
+
+
+###
+
+POST https://10.250.15.180/mgmt/tm/ltm/virtual
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "name": "default_rest-service",
+    "destination": "1.2.3.4:8090",
+    "ipProtocol": "tcp",
+    "rateLimit": "disabled",
+    "rateLimitMode": "object",
+    "sourceAddressTranslation": {
+        "type": "snat",
+        "pool": "snatpool"
+    },
+    "rules": [
+        "irule_func"
+    ]
+}
+
+### get virtual
+
+GET https://10.250.15.180/mgmt/tm/ltm/virtual/~Common~vs_default_rest-service
+Authorization: Basic admin:P@ssw0rd123
+
+### get virtual profiles
+
+GET https://10.250.15.180/mgmt/tm/ltm/virtual/~Common~my-virtual-standard-tcp_customized/profiles
+Authorization: Basic admin:P@ssw0rd123
+
+### delete virtual
+
+DELETE https://10.250.15.180/mgmt/tm/ltm/virtual/~Common~vs_default_rest-service
+Authorization: Basic admin:P@ssw0rd123
+
+###
+
+POST https://10.250.15.180/mgmt/tm/ltm/virtual
+Authorization: Basic admin:P@ssw0rd123
+
+{
+    "addressStatus": "yes",
+    "connectionLimit": 0,
+    "destination": "197.14.222.12:80",
+    "enable": true,
+    "httpMrfRoutingEnabled": false,
+    "ipProtocol": "tcp",
+    "lastHop": "default",
+    "mirror": "disabled",
+    "name": "service_name_vs",
+    "nat64": "disabled",
+    "profileTCP": "normal",
+    "rateLimit": 0,
+    "serviceDownImmediateAction": "none",
+    "shareAddresses": false,
+    "sourceAddressTranslation": {
+        "type": "automap"
+    },
+    "sourcePort": "preserve",
+    "translateAddress": "enabled",
+    "translatePort": "enabled",
+    "virtualType": "standard"
+}
+
+###
+
+DELETE https://10.250.15.180/mgmt/tm/ltm/virtual/~Common~service_name_vs
+Authorization: Basic admin:P@ssw0rd123
+
+
+###
+
+GET https://10.250.15.180/mgmt/tm/ltm/virtual/~namespace_name~service_name_app~service_name_vs
+Authorization: Basic admin:P@ssw0rd123
+
+
+###
+GET https://10.250.18.105:8443/mgmt/tm/ltm/virtual/~Common~file-servervs 
+Authorization: Basic admin:P@ssw0rd123
+
+###
+
+PATCH https://10.250.15.180/mgmt/tm/ltm/virtual/~k8s-ceb001~k8s-ceb001-svc-1-app~k8s-ceb001-svc-1-vs-80
+Authorization: Basic admin:P@ssw0rd123
+
+{
+  "nat64": "enabled"
+}
